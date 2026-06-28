@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Voipark PM Portfolio — jobshih</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #222536;
+    --border: #2d3148;
+    --accent: #6366f1;
+    --accent2: #06b6d4;
+    --accent3: #10b981;
+    --accent4: #f59e0b;
+    --accent5: #ef4444;
+    --text: #e2e8f0;
+    --muted: #64748b;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; }
+  header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 20px 32px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+  header .title { font-size: 18px; font-weight: 700; color: var(--accent2); }
+  header .sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  header .back { color: var(--muted); font-size: 13px; text-decoration: none; }
+  header .back:hover { color: var(--text); }
+  .tabs { display: flex; gap: 8px; margin: 24px 32px 0; flex-wrap: wrap; }
+  .tab { padding: 7px 18px; border-radius: 6px; font-size: 13px; cursor: pointer; border: 1px solid var(--border); background: transparent; color: var(--muted); transition: all 0.15s; }
+  .tab.active { background: var(--accent2); border-color: var(--accent2); color: #fff; font-weight: 600; }
+  .tab:hover:not(.active) { border-color: var(--accent2); color: var(--text); }
+  .panel { display: none; padding: 28px 32px 60px; max-width: 960px; }
+  .panel.active { display: block; }
+
+  h2 { font-size: 22px; font-weight: 700; margin-bottom: 8px; color: var(--text); }
+  h3 { font-size: 15px; font-weight: 600; color: var(--accent2); margin: 24px 0 12px; }
+  h4 { font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin: 20px 0 8px; }
+  p { font-size: 14px; line-height: 1.7; color: #a8b4c4; margin-bottom: 12px; }
+  .section-header { border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 20px; }
+  .section-header .meta { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .badge-p0 { background: rgba(239,68,68,0.15); color: var(--accent5); border: 1px solid rgba(239,68,68,0.3); }
+  .badge-p1 { background: rgba(245,158,11,0.15); color: var(--accent4); border: 1px solid rgba(245,158,11,0.3); }
+  .badge-p2 { background: rgba(99,102,241,0.15); color: var(--accent); border: 1px solid rgba(99,102,241,0.3); }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 14px; }
+  .card-row { display: grid; gap: 14px; }
+  .card-row.cols2 { grid-template-columns: 1fr 1fr; }
+  .card-row.cols3 { grid-template-columns: 1fr 1fr 1fr; }
+  @media (max-width: 700px) { .card-row.cols2, .card-row.cols3 { grid-template-columns: 1fr; } }
+  .card h3 { margin-top: 0; font-size: 14px; }
+  .card p { font-size: 13px; margin-bottom: 6px; }
+
+  .metric-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px 20px; text-align: center; }
+  .metric-card .value { font-size: 28px; font-weight: 700; color: var(--accent2); margin-bottom: 4px; }
+  .metric-card .label { font-size: 12px; color: var(--muted); }
+  .metric-card .note { font-size: 11px; color: var(--accent3); margin-top: 4px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 20px; }
+  th { background: var(--surface2); color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 12px; border-bottom: 1px solid rgba(45,49,72,0.5); vertical-align: top; line-height: 1.5; color: #a8b4c4; }
+  tr:last-child td { border-bottom: none; }
+
+  .scope-list { list-style: none; }
+  .scope-list li { padding: 7px 0; font-size: 13px; color: #a8b4c4; border-bottom: 1px solid rgba(45,49,72,0.3); display: flex; align-items: flex-start; gap: 8px; }
+  .scope-list li:last-child { border-bottom: none; }
+  .scope-in::before { content: '✓'; color: var(--accent3); font-weight: 700; flex-shrink: 0; }
+  .scope-out::before { content: '✗'; color: var(--accent5); font-weight: 700; flex-shrink: 0; }
+
+  .insight { background: rgba(6,182,212,0.07); border-left: 3px solid var(--accent2); border-radius: 0 8px 8px 0; padding: 12px 16px; margin: 12px 0 20px; font-size: 13px; color: #a8b4c4; line-height: 1.7; }
+  .insight strong { color: var(--text); }
+
+  /* Persona cards */
+  .persona { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
+  .persona-name { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+  .persona-role { font-size: 12px; color: var(--muted); margin-bottom: 12px; }
+  .persona-row { display: flex; gap: 8px; margin-bottom: 8px; }
+  .persona-label { font-size: 11px; color: var(--muted); width: 60px; flex-shrink: 0; padding-top: 1px; }
+  .persona-val { font-size: 13px; color: #a8b4c4; line-height: 1.5; }
+  .quote { font-style: italic; font-size: 13px; color: var(--accent2); border-left: 2px solid var(--accent2); padding-left: 10px; margin-top: 12px; }
+
+  /* RICE table */
+  .rice-score { font-weight: 700; color: var(--accent2); }
+
+  /* Voice flow */
+  .flow-step { display: flex; align-items: flex-start; gap: 12px; padding: 10px 0; border-bottom: 1px solid rgba(45,49,72,0.3); }
+  .flow-step:last-child { border-bottom: none; }
+  .step-num { width: 24px; height: 24px; border-radius: 50%; background: var(--accent2); color: #0f1117; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+  .step-name { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+  .step-desc { font-size: 12px; color: #a8b4c4; }
+  .step-note { font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+  /* OKR */
+  .okr-o { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px 20px; margin-bottom: 12px; }
+  .okr-objective { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 14px; }
+  .okr-kr { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid rgba(45,49,72,0.3); font-size: 13px; color: #a8b4c4; }
+  .okr-kr:last-child { border-bottom: none; }
+  .kr-tag { font-size: 10px; color: var(--muted); width: 32px; flex-shrink: 0; }
+
+  /* Framework cards */
+  .framework-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+  @media (max-width: 700px) { .framework-grid { grid-template-columns: 1fr; } }
+  .fw-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; }
+  .fw-name { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+  .fw-finding { font-size: 13px; color: #a8b4c4; line-height: 1.6; }
+  .fw-conclusion { font-size: 12px; color: var(--accent3); margin-top: 8px; font-weight: 600; }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <div class="title">Voipark — PM Portfolio Case Study</div>
+    <div class="sub">語音停車助理 · 台北／新北 · PM 設計調研</div>
+  </div>
+  <a href="../index.html" class="back">← 回 PM Roadmap</a>
+</header>
+
+<div class="tabs">
+  <button class="tab active" onclick="showTab('strategy')">產品策略</button>
+  <button class="tab" onclick="showTab('research')">市場調研</button>
+  <button class="tab" onclick="showTab('personas')">用戶研究</button>
+  <button class="tab" onclick="showTab('requirements')">功能需求</button>
+  <button class="tab" onclick="showTab('okr')">OKR / 指標</button>
+</div>
+
+<!-- Strategy Tab -->
+<div class="panel active" id="strategy">
+  <div class="section-header">
+    <h2>產品策略 — 為什麼做這個？憑什麼贏？</h2>
+    <div class="meta">聲音停車助理 · 信心透明機制 · B2B 優先商業模式</div>
+  </div>
+
+  <h3>一、問題定義</h3>
+  <div class="card">
+    <p>台北市機動車輛 > 60 萬台，新北市 > 90 萬台。找停車位是駕駛每天面臨的高頻問題，但現有解法都要求駕駛「低頭看螢幕」——在行車安全與用車體驗之間製造根本衝突。</p>
+    <p>更深層的問題：台北市 ~2,200 個路邊停車場、政府 TDX 資料更新頻率約每 15 分鐘一次。所有競爭對手都隱藏資料的不確定性，但資料過時正是錯誤導航的根源。</p>
+  </div>
+
+  <h3>二、差異化定位</h3>
+  <div class="insight">
+    <strong>核心洞察：</strong>「信心透明」是 Voipark 的結構性護城河，不是功能。當 Voipark 說「資料 8 分鐘前，信心約 70%」，Google Maps 若複製此行為會等同承認自己的資料品質缺陷——這是大平台結構性無法跟進的策略。
+  </div>
+
+  <div class="card-row cols3">
+    <div class="card">
+      <h3>差異化 1：聲音閉環</h3>
+      <p>聲音查詢 → 聲音回答（含信心等級）→ 導航切換，全程無需觸碰螢幕。CarPlay 架構限制讓第三方 App 無法做到完整語音停車回應——iPhone 原生成為唯一平台。</p>
+    </div>
+    <div class="card">
+      <h3>差異化 2：信心透明</h3>
+      <p>主動揭示資料新鮮度與可靠度，競爭者隱藏此資訊。台北高信心停車場 ~110 個（TDX 有效率 99%，中位數 1.9 分鐘），這是資料護城河的起點。</p>
+    </div>
+    <div class="card">
+      <h3>差異化 3：B2B 模式</h3>
+      <p>台灣消費者預期停車 App 免費，C-side 訂閱難變現。停車場業者（導流費 / API 授權）才是付費意願來源。目標：~30 個場站 × NT$3,000/月 = 初期驗證。</p>
+    </div>
+  </div>
+
+  <h3>三、競爭對手動態</h3>
+  <table>
+    <thead><tr><th>競爭者</th><th>優勢</th><th>弱點</th><th>對 Voipark 的威脅</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Google Maps</strong></td><td>用戶基礎龐大；導航整合無縫</td><td>揭示資料不確定性會損害品牌；CarPlay 限制無語音停車</td><td>技術能力存在，但組織誘因消極</td></tr>
+      <tr><td><strong>Apple Maps</strong></td><td>CarPlay 原生整合；iOS 深度整合</td><td>台灣停車場資料覆蓋率低</td><td>若原生整合停車查詢，威脅最大</td></tr>
+      <tr><td><strong>USPACE</strong></td><td>140 萬+ 會員；預訂功能</td><td>無語音界面；需低頭操作；資料局限自有場站</td><td>低，定位不同</td></tr>
+      <tr><td><strong>iParking</strong></td><td>台北市官方資料授權</td><td>介面老舊；無語音；資料透明度低</td><td>低，進入壁壘在語音 UX，非資料</td></tr>
+    </tbody>
+  </table>
+
+  <h3>四、地理灘頭陣地策略</h3>
+  <div class="card-row cols2">
+    <div class="card">
+      <h3>Phase 1 — 台北高信心區（Beachhead）</h3>
+      <p>TDX 資料有效率 99%，中位數更新 1.9 分鐘的台北外圍停車場（~110 個）。在此區域，信心透明機制最具說服力——資料本就高品質，揭示它只會加分。</p>
+      <p><strong>驗證目標：</strong>語音問答完成率 ≥80%；用戶滿意度 ≥4/5</p>
+    </div>
+    <div class="card">
+      <h3>Phase 2 — 新北 / 台北核心</h3>
+      <p>TDX 覆蓋較弱的區域——但信心透明機制在此更有價值（低信心時誠實告知用戶「資料較舊，建議確認」）。需先建立 Phase 1 的口碑與資料驗證。</p>
+      <p><strong>前提條件：</strong>Phase 1 NPS ≥30；B2B 場站合作 ≥5 個</p>
+    </div>
+  </div>
+</div>
+
+<!-- Research Tab -->
+<div class="panel" id="research">
+  <div class="section-header">
+    <h2>市場調研 — 七框架整合分析</h2>
+    <div class="meta">PESTEL · Porter's Five Forces · SWOT · VRIO · BMC · JTBD · 藍海 ERRC</div>
+  </div>
+
+  <h3>整合戰略結論（七框架交叉比對）</h3>
+  <div class="insight">
+    <strong>一致性發現：</strong>所有七個框架的分析都指向同一個戰略方向——以「信心透明 + 語音閉環」為核心差異化，優先拿下 B2B（停車場業者）而非追求 C-side 規模。Google / Apple 的威脅是真實的，但兩者都有組織上的誘因問題無法輕易跟進。時機窗口：CarPlay 語音限制預計 2–3 年內不變，這是窗口期。
+  </div>
+
+  <div class="framework-grid">
+    <div class="fw-card">
+      <div class="fw-name">PESTEL</div>
+      <div class="fw-finding">台灣停車位不足（法定 1 車位：1.5 戶，實際供需倒掛）。政府 TDX 資料開放政策是結構性利多；iOS 市佔約 35%（目標族群更高）。</div>
+      <div class="fw-conclusion">→ 政策 + 資料環境有利；平台先選 iPhone</div>
+    </div>
+    <div class="fw-card">
+      <div class="fw-name">Porter's Five Forces</div>
+      <div class="fw-finding">進入者威脅低（語音 UX 技術門檻高）；替代品威脅高（Google Maps 隨時可加功能）；供應商議價力低（TDX 免費開放）；買方議價力 B2B 端中等。</div>
+      <div class="fw-conclusion">→ 對大平台的護城河在信心透明，非技術</div>
+    </div>
+    <div class="fw-card">
+      <div class="fw-name">SWOT</div>
+      <div class="fw-finding">優勢：信心透明機制獨特；語音閉環技術領先。劣勢：品牌知名度零；資金有限。機會：Apple CarPlay 開放時機。威脅：Google / Apple 原生整合。</div>
+      <div class="fw-conclusion">→ SO 策略：搶在大平台前建立 B2B 生態</div>
+    </div>
+    <div class="fw-card">
+      <div class="fw-name">VRIO</div>
+      <div class="fw-finding">信心透明機制：有價值（V）、稀缺（R）、難模仿（I，大平台有組織誘因問題）、組織具備執行能力（O）→ 持久競爭優勢。語音閉環：V+R，但 Apple 可改規則（I 不穩定）。</div>
+      <div class="fw-conclusion">→ 信心透明 > 語音技術，前者更持久</div>
+    </div>
+    <div class="fw-card">
+      <div class="fw-name">BMC（商業模式畫布）</div>
+      <div class="fw-finding">C-side 免費獲取用戶；B2B（停車場業者）付費：導流費 + API 授權。核心資源是 TDX 資料整合 + 信心演算法。關鍵合作：Taipei 交通局（資料保護）。</div>
+      <div class="fw-conclusion">→ 雙邊平台：C-side 免費，B2B 收費</div>
+    </div>
+    <div class="fw-card">
+      <div class="fw-name">JTBD</div>
+      <div class="fw-finding">功能型工作：找到有車位的停車場。情緒型工作：不焦慮、不分心。社交型工作：到達目的地準時，不讓人等。現有解法（Google Maps）解決功能工作但製造情緒焦慮（低頭看屏、資料可信度未知）。</div>
+      <div class="fw-conclusion">→ 情緒工作（不焦慮）是差異化核心</div>
+    </div>
+    <div class="fw-card" style="grid-column: 1 / -1">
+      <div class="fw-name">藍海 ERRC 框架</div>
+      <div class="fw-finding">
+        <table style="margin:0">
+          <tr><td style="color:var(--accent5);font-weight:600;width:80px">消除</td><td>停車資料確定性的幻象；需低頭操作的互動設計</td></tr>
+          <tr><td style="color:var(--accent4);font-weight:600">減少</td><td>精確剩餘車位數（用信心等級替代）；複雜 UI 功能</td></tr>
+          <tr><td style="color:var(--accent3);font-weight:600">提升</td><td>行車安全（全語音）；資料誠實度（信心透明）</td></tr>
+          <tr><td style="color:var(--accent2);font-weight:600">創造</td><td>語音信心等級回報（產業首創）；停車場業者導流收益分享</td></tr>
+        </table>
+      </div>
+      <div class="fw-conclusion">→ 藍海：在「語音 × 信心透明」交叉點開創新市場</div>
+    </div>
+  </div>
+
+  <h3>市場規模估算</h3>
+  <div class="card-row cols3">
+    <div class="metric-card">
+      <div class="value">150萬+</div>
+      <div class="label">台北 + 新北汽車登記數</div>
+      <div class="note">TAM（日常通勤駕駛）</div>
+    </div>
+    <div class="metric-card">
+      <div class="value">~30萬</div>
+      <div class="label">高頻停車需求族群</div>
+      <div class="note">SAM（台北市通勤駕駛）</div>
+    </div>
+    <div class="metric-card">
+      <div class="value">~3萬</div>
+      <div class="label">Early Adopter 目標</div>
+      <div class="note">SOM（Year 1，iPhone 語音早採用者）</div>
+    </div>
+  </div>
+</div>
+
+<!-- Personas Tab -->
+<div class="panel" id="personas">
+  <div class="section-header">
+    <h2>用戶研究 — Personas × JTBD 深化</h2>
+    <div class="meta">三類核心使用者 · 功能 / 情緒 / 社交工作分析</div>
+  </div>
+
+  <h3>Persona A — 台北上班族（主要目標）</h3>
+  <div class="persona">
+    <div class="persona-name">陳建宏</div>
+    <div class="persona-role">33 歲 · 軟體工程師 · 每週 5 天開車通勤，台北市中心</div>
+    <div class="persona-row"><span class="persona-label">情境</span><span class="persona-val">早上趕上班，停車場常爆滿。邊開車邊拿手機查 Google Maps 既危險又心煩，經常在幾個停車場之間繞圈浪費 15 分鐘。</span></div>
+    <div class="persona-row"><span class="persona-label">痛點</span><span class="persona-val">地圖 App 顯示「有車位」但到了才發現滿了；停紅燈才敢低頭查；資料多久前的完全不知道。</span></div>
+    <div class="persona-row"><span class="persona-label">目標</span><span class="persona-val">不焦慮地找到停車位，不遲到，不要分心駕駛。</span></div>
+    <div class="persona-row"><span class="persona-label">行為</span><span class="persona-val">iPhone 用戶；常用 Siri；已安裝 Google Maps、iParking；對新 App 採用門檻低但刪除也快。</span></div>
+    <div class="quote">"如果 App 能直接告訴我『前面那個停車場大概還有位子，但資料是 5 分鐘前的』，我就知道要不要賭了。"</div>
+    <div style="margin-top:14px">
+      <h4>JTBD 分析</h4>
+      <table style="margin-top:8px">
+        <tr><td style="width:100px;font-weight:600;color:var(--muted)">功能工作</td><td>在抵達目的地前找到可停的停車場</td></tr>
+        <tr><td style="font-weight:600;color:var(--muted)">情緒工作</td><td>整個行程不焦慮；相信 App 告訴我的資訊</td></tr>
+        <tr><td style="font-weight:600;color:var(--muted)">社交工作</td><td>準時抵達，不讓同事 / 客戶等待</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <h3>Persona B — 商務拜訪者（次要目標）</h3>
+  <div class="persona">
+    <div class="persona-name">林雅婷</div>
+    <div class="persona-role">41 歲 · 業務主管 · 每週拜訪 3–5 個客戶，台北各區</div>
+    <div class="persona-row"><span class="persona-label">情境</span><span class="persona-val">開公司配車拜訪客戶，到達陌生區域不熟悉停車位置。趕 meeting 時壓力最大，需要快速決策。</span></div>
+    <div class="persona-row"><span class="persona-label">痛點</span><span class="persona-val">每次拜訪新地點都要臨時搜尋停車場；路邊停車 vs 停車場的判斷沒有依據；超時停車罰款造成焦慮。</span></div>
+    <div class="persona-row"><span class="persona-label">目標</span><span class="persona-val">抵達前就確定停哪裡，會議結束後能快速離場。</span></div>
+    <div class="quote">"我需要的不是最近的停車場，是最可能還有位子的停車場，而且最好能用說的問。"</div>
+    <div style="margin-top:14px">
+      <h4>JTBD 分析</h4>
+      <table style="margin-top:8px">
+        <tr><td style="width:100px;font-weight:600;color:var(--muted)">功能工作</td><td>在拜訪地點附近找到確定能停的地方</td></tr>
+        <tr><td style="font-weight:600;color:var(--muted)">情緒工作</td><td>不因停車問題影響見客戶的心理狀態</td></tr>
+        <tr><td style="font-weight:600;color:var(--muted)">社交工作</td><td>展現專業，準時赴約，不解釋「因為找停車位遲到」</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <h3>Persona C — B2B 停車場業者（付費用戶）</h3>
+  <div class="persona">
+    <div class="persona-name">張經理</div>
+    <div class="persona-role">48 歲 · 私有停車場管理者 · 台北市中心，100 個車位</div>
+    <div class="persona-row"><span class="persona-label">情境</span><span class="persona-val">停車場在尖峰時段幾乎全滿，但非尖峰（平日午後）常閒置 30–40%。希望提高整體使用率，但不知道如何曝光給路過駕駛。</span></div>
+    <div class="persona-row"><span class="persona-label">痛點</span><span class="persona-val">USPACE 競品要求分潤過高；自己做 App 沒有能力；TDX 公開資料讓競爭者也知道自己場站狀況。</span></div>
+    <div class="persona-row"><span class="persona-label">目標</span><span class="persona-val">非尖峰時段填滿車位；不要支付過高佣金；能看到導流效果數據。</span></div>
+    <div class="quote">"如果有個 App 能精準把有停車需求的駕駛導過來，每月 NT$3,000 的費用是合理的，比我自己打廣告便宜多了。"</div>
+    <div style="margin-top:14px">
+      <h4>購買決策因素</h4>
+      <table style="margin-top:8px">
+        <tr><td style="width:100px;font-weight:600;color:var(--muted)">Must-have</td><td>可量化的導流數據（多少人因 App 來停）；費用清晰無隱費</td></tr>
+        <tr><td style="font-weight:600;color:var(--muted)">Nice-to-have</td><td>能看到自己場站在 App 內的顯示排名；競爭場站資料</td></tr>
+        <tr><td style="font-weight:600;color:var(--muted)">Dealbreaker</td><td>過高的成功抽佣（>5%）；資料外洩場站即時資訊給競爭對手</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Requirements Tab -->
+<div class="panel" id="requirements">
+  <div class="section-header">
+    <h2>功能需求 — RICE 優先化</h2>
+    <div class="meta">11 步語音流程設計 · P0 MVP Scope · RICE 評分</div>
+  </div>
+
+  <h3>核心語音互動流程（11 步）</h3>
+  <div class="card" style="padding: 14px 20px">
+    <div class="flow-step">
+      <div class="step-num">1</div>
+      <div><div class="step-name">Wake Word / 啟動</div><div class="step-desc">用戶說「嘿 Voipark」或點擊 Widget 啟動</div><div class="step-note">注意：Siri Shortcut 整合可降低啟動摩擦</div></div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">2</div>
+      <div><div class="step-name">語音輸入接收</div><div class="step-desc">「我在忠孝東路，附近哪裡有停車位？」</div><div class="step-note">STT：Apple Speech Recognition（在地化效果佳）</div></div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">3</div>
+      <div><div class="step-name">意圖解析</div><div class="step-desc">NLU 解析：地點（忠孝東路）、需求（停車位）、隱含（最近、有空位）</div></div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">4</div>
+      <div><div class="step-name">位置定位</div><div class="step-desc">取得 GPS 座標；若地點模糊則用語音澄清問句（「你說的忠孝東路幾段附近？」）</div></div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">5</div>
+      <div><div class="step-name">停車場資料查詢</div><div class="step-desc">查詢 TDX + 合作場站即時資料；計算各場站信心等級</div><div class="step-note">信心 = f(資料新鮮度, 歷史準確率, 時段模式)</div></div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">6</div>
+      <div><div class="step-name">信心等級計算</div><div class="step-desc">高：資料 &lt;5 分鐘，歷史準確率 &gt;90% → 「很有可能有位子」<br>中：資料 5–15 分鐘 → 「應該還有位子，但建議確認」<br>低：資料 &gt;15 分鐘 → 「資料較舊，建議電話確認」</div></div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">7</div>
+      <div><div class="step-name">語音回答生成</div><div class="step-desc">TTS 合成自然語句：「忠孝東路四段有個全日停車場，大約 3 分鐘，資料是 4 分鐘前的，應該還有位子。要我導過去嗎？」</div></div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">8</div>
+      <div><div class="step-name">用戶確認</div><div class="step-desc">用戶語音回應「好」或「再找一個」或「算了」</div></div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">9</div>
+      <div><div class="step-name">導航移交</div><div class="step-desc">確認後自動切換 Apple Maps / Google Maps 導航到停車場入口</div><div class="step-note">Deep link to Maps；不另起獨立導航，減少切換摩擦</div></div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">10</div>
+      <div><div class="step-name">到達確認（可選）</div><div class="step-desc">抵達後詢問：「停到了嗎？」→ 收集實際結果校正信心模型</div></div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">11</div>
+      <div><div class="step-name">反饋回路</div><div class="step-desc">成功 / 失敗案例回饋信心演算法；積累場站準確率歷史資料</div><div class="step-note">關鍵：飛輪效應——使用越多，信心模型越準</div></div>
+    </div>
+  </div>
+
+  <h3>RICE 優先化評分</h3>
+  <table>
+    <thead>
+      <tr><th>功能</th><th>Reach</th><th>Impact</th><th>Confidence</th><th>Effort</th><th>RICE</th><th>優先級</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>語音查詢 + TDX 資料整合</strong><br><span style="font-size:11px;color:var(--muted)">Step 1–5 基礎流程</span></td>
+        <td>100%</td><td>3</td><td>90%</td><td>4週</td>
+        <td><span class="rice-score">67.5</span></td>
+        <td><span class="badge badge-p0">P0</span></td>
+      </tr>
+      <tr>
+        <td><strong>信心等級計算 + 語音回答</strong><br><span style="font-size:11px;color:var(--muted)">Step 6–7 核心差異化</span></td>
+        <td>100%</td><td>3</td><td>80%</td><td>3週</td>
+        <td><span class="rice-score">80</span></td>
+        <td><span class="badge badge-p0">P0</span></td>
+      </tr>
+      <tr>
+        <td><strong>導航移交（Maps deep link）</strong><br><span style="font-size:11px;color:var(--muted)">Step 9 閉環收尾</span></td>
+        <td>100%</td><td>2</td><td>95%</td><td>1週</td>
+        <td><span class="rice-score">190</span></td>
+        <td><span class="badge badge-p0">P0</span></td>
+      </tr>
+      <tr>
+        <td><strong>到達確認 + 信心模型回饋</strong><br><span style="font-size:11px;color:var(--muted)">Step 10–11 飛輪機制</span></td>
+        <td>40%</td><td>3</td><td>70%</td><td>3週</td>
+        <td><span class="rice-score">28</span></td>
+        <td><span class="badge badge-p1">P1</span></td>
+      </tr>
+      <tr>
+        <td><strong>B2B 業者後台（導流報表）</strong><br><span style="font-size:11px;color:var(--muted)">Persona C 核心需求</span></td>
+        <td>20%</td><td>3</td><td>80%</td><td>4週</td>
+        <td><span class="rice-score">12</span></td>
+        <td><span class="badge badge-p1">P1</span></td>
+      </tr>
+      <tr>
+        <td><strong>Widget / Lock Screen 快速啟動</strong><br><span style="font-size:11px;color:var(--muted)">降低啟動摩擦</span></td>
+        <td>60%</td><td>2</td><td>80%</td><td>1週</td>
+        <td><span class="rice-score">96</span></td>
+        <td><span class="badge badge-p1">P1</span></td>
+      </tr>
+      <tr>
+        <td><strong>CarPlay 整合（受限語音）</strong><br><span style="font-size:11px;color:var(--muted)">架構限制：無法完整語音閉環</span></td>
+        <td>30%</td><td>2</td><td>50%</td><td>6週</td>
+        <td><span class="rice-score">5</span></td>
+        <td><span class="badge badge-p2">P2</span></td>
+      </tr>
+      <tr>
+        <td><strong>新北市擴展</strong><br><span style="font-size:11px;color:var(--muted)">TDX 覆蓋較弱，信心模型複雜</span></td>
+        <td>50%</td><td>2</td><td>60%</td><td>8週</td>
+        <td><span class="rice-score">7.5</span></td>
+        <td><span class="badge badge-p2">P2</span></td>
+      </tr>
+    </tbody>
+  </table>
+  <p style="font-size:12px;color:var(--muted)">RICE = (Reach × Impact × Confidence) / Effort（週）。數字供相對比較，非絕對值。</p>
+
+  <h3>MVP 範圍邊界</h3>
+  <div class="card-row cols2">
+    <div class="card">
+      <h4>MVP 內</h4>
+      <ul class="scope-list">
+        <li class="scope-in">iPhone 原生 App（iOS 16+）</li>
+        <li class="scope-in">語音查詢 → 信心等級回答 → 導航移交（完整閉環）</li>
+        <li class="scope-in">台北市高信心停車場 ~110 個（TDX 資料）</li>
+        <li class="scope-in">B2B 業者上架申請流程（手動審核 MVP）</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>MVP 外</h4>
+      <ul class="scope-list">
+        <li class="scope-out">Android App</li>
+        <li class="scope-out">CarPlay 整合（架構限制，P2）</li>
+        <li class="scope-out">新北市（TDX 覆蓋不足）</li>
+        <li class="scope-out">路邊停車格即時空位（資料不存在）</li>
+        <li class="scope-out">停車費預測 / 停車場預訂</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- OKR Tab -->
+<div class="panel" id="okr">
+  <div class="section-header">
+    <h2>OKR / 成功指標框架</h2>
+    <div class="meta">北極星指標 · 季度 OKR · 護欄指標</div>
+  </div>
+
+  <h3>北極星指標（North Star Metric）</h3>
+  <div class="card" style="border-color:var(--accent2);background:rgba(6,182,212,0.06)">
+    <h3 style="color:var(--accent2);margin-top:0">語音查詢成功完成率 × 每週活躍用戶數</h3>
+    <p>定義「成功完成」：用戶語音查詢 → 收到信心等級回答 → 接受導航移交（未在步驟中途退出）。此指標同時捕捉功能完整性（完成率）與市場牽引力（WAU），避免只追蹤下載數造成虛榮指標陷阱。</p>
+  </div>
+
+  <h3>Q1 OKR（MVP 驗證期）</h3>
+  <div class="okr-o">
+    <div class="okr-objective">O1 — 證明語音停車閉環在真實駕駛情境中可靠運作</div>
+    <div class="okr-kr"><span class="kr-tag">KR1.1</span>Beta 用戶（n≥30）語音查詢完成率 ≥ 80%（不中途退出）</div>
+    <div class="okr-kr"><span class="kr-tag">KR1.2</span>信心等級準確率 ≥ 75%（高信心時實際有位子的比例）</div>
+    <div class="okr-kr"><span class="kr-tag">KR1.3</span>語音 STT 識別失誤率 &lt; 10%（台語口音 / 路名識別）</div>
+    <div class="okr-kr"><span class="kr-tag">KR1.4</span>語音回答到導航切換 P95 &lt; 3 秒</div>
+  </div>
+  <div class="okr-o">
+    <div class="okr-objective">O2 — 確認 B2B 停車場業者付費意願與合作路徑</div>
+    <div class="okr-kr"><span class="kr-tag">KR2.1</span>完成 10 個停車場業者深度訪談</div>
+    <div class="okr-kr"><span class="kr-tag">KR2.2</span>3 個業者表達付費合作意向（LOI 或 PO）</div>
+    <div class="okr-kr"><span class="kr-tag">KR2.3</span>確認導流費定價模型（NT$3,000/月 vs 成功抽佣，擇一）</div>
+  </div>
+  <div class="okr-o">
+    <div class="okr-objective">O3 — 建立政府資料保護關係（TDX 護城河）</div>
+    <div class="okr-kr"><span class="kr-tag">KR3.1</span>完成與台北市交通局初次接洽</div>
+    <div class="okr-kr"><span class="kr-tag">KR3.2</span>確認 TDX 資料授權條款不限制商業使用</div>
+    <div class="okr-kr"><span class="kr-tag">KR3.3</span>評估資料獨家優先存取可行性</div>
+  </div>
+
+  <h3>Q2 OKR（B2B 商業驗證期）</h3>
+  <div class="okr-o">
+    <div class="okr-objective">O4 — 實現初步 B2B 營收驗證</div>
+    <div class="okr-kr"><span class="kr-tag">KR4.1</span>上線 B2B 付費業者 ≥ 5 個</div>
+    <div class="okr-kr"><span class="kr-tag">KR4.2</span>月重複性收入（MRR）≥ NT$15,000</div>
+    <div class="okr-kr"><span class="kr-tag">KR4.3</span>業者 30 天留存率 ≥ 80%（未退出合作）</div>
+  </div>
+  <div class="okr-o">
+    <div class="okr-objective">O5 — C-side 用戶自然增長</div>
+    <div class="okr-kr"><span class="kr-tag">KR5.1</span>月活躍用戶 MAU ≥ 500（無付費買量）</div>
+    <div class="okr-kr"><span class="kr-tag">KR5.2</span>7 天留存率 ≥ 30%</div>
+    <div class="okr-kr"><span class="kr-tag">KR5.3</span>NPS ≥ 40（推薦意願）</div>
+  </div>
+
+  <h3>護欄指標（Guard Rails）</h3>
+  <table>
+    <thead><tr><th>指標</th><th>限制</th><th>原因</th></tr></thead>
+    <tbody>
+      <tr><td>高信心誤導率（說有，其實沒有）</td><td>&lt; 15%</td><td>超過此比率，「信心透明」品牌承諾崩塌</td></tr>
+      <tr><td>App 崩潰率</td><td>&lt; 1%</td><td>行車中 App 閃退是安全問題，非只是 UX 問題</td></tr>
+      <tr><td>語音回答平均延遲</td><td>&lt; 4 秒</td><td>超過 4 秒，駕駛會轉移注意力到螢幕</td></tr>
+      <tr><td>B2B 業者投訴（資料外洩）</td><td>0</td><td>場站即時資訊外洩給競爭業者是 dealbreaker</td></tr>
+      <tr><td>30 天 App 卸載率</td><td>&lt; 50%</td><td>停車 App 本質上低頻，但卸載過高表示核心體驗失敗</td></tr>
+    </tbody>
+  </table>
+
+  <h3>先行指標 vs 落後指標</h3>
+  <div class="card-row cols2">
+    <div class="card">
+      <h3>先行指標（每週追蹤）</h3>
+      <ul class="scope-list">
+        <li class="scope-in">語音查詢完成率（預測 MAU 趨勢）</li>
+        <li class="scope-in">信心等級準確率（預測 NPS）</li>
+        <li class="scope-in">B2B 業者進行中洽談數（預測 MRR）</li>
+        <li class="scope-in">Beta 用戶每週使用次數（預測留存）</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>落後指標（每月追蹤）</h3>
+      <ul class="scope-list">
+        <li class="scope-in">MAU / WAU（用戶規模）</li>
+        <li class="scope-in">MRR（B2B 月收入）</li>
+        <li class="scope-in">7d / 30d 留存率</li>
+        <li class="scope-in">NPS（推薦意願）</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<script>
+function showTab(id) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.target.classList.add('active');
+}
+</script>
+</body>
+</html>

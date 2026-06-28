@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Linkju PM Portfolio — jobshih</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #222536;
+    --border: #2d3148;
+    --accent: #6366f1;
+    --accent2: #06b6d4;
+    --accent3: #10b981;
+    --accent4: #f59e0b;
+    --accent5: #ef4444;
+    --text: #e2e8f0;
+    --muted: #64748b;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; }
+  header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 20px 32px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+  header .title { font-size: 18px; font-weight: 700; color: var(--accent); }
+  header .sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  header .back { color: var(--muted); font-size: 13px; text-decoration: none; }
+  header .back:hover { color: var(--text); }
+  .tabs { display: flex; gap: 8px; margin: 24px 32px 0; }
+  .tab { padding: 7px 18px; border-radius: 6px; font-size: 13px; cursor: pointer; border: 1px solid var(--border); background: transparent; color: var(--muted); transition: all 0.15s; }
+  .tab.active { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+  .tab:hover:not(.active) { border-color: var(--accent); color: var(--text); }
+  .panel { display: none; padding: 28px 32px 60px; max-width: 960px; }
+  .panel.active { display: block; }
+
+  /* Shared components */
+  h2 { font-size: 22px; font-weight: 700; margin-bottom: 8px; color: var(--text); }
+  h3 { font-size: 15px; font-weight: 600; color: var(--accent2); margin: 24px 0 12px; }
+  h4 { font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin: 20px 0 8px; }
+  p { font-size: 14px; line-height: 1.7; color: #a8b4c4; margin-bottom: 12px; }
+  .section-header { border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 20px; }
+  .section-header .meta { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .badge-p0 { background: rgba(239,68,68,0.15); color: var(--accent5); border: 1px solid rgba(239,68,68,0.3); }
+  .badge-p1 { background: rgba(245,158,11,0.15); color: var(--accent4); border: 1px solid rgba(245,158,11,0.3); }
+  .badge-p2 { background: rgba(99,102,241,0.15); color: var(--accent); border: 1px solid rgba(99,102,241,0.3); }
+  .badge-done { background: rgba(16,185,129,0.15); color: var(--accent3); border: 1px solid rgba(16,185,129,0.3); }
+  .badge-wip { background: rgba(6,182,212,0.15); color: var(--accent2); border: 1px solid rgba(6,182,212,0.3); }
+  .badge-todo { background: rgba(45,49,72,0.6); color: var(--muted); border: 1px solid var(--border); }
+
+  /* Cards */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 14px; }
+  .card-row { display: grid; gap: 14px; }
+  .card-row.cols2 { grid-template-columns: 1fr 1fr; }
+  .card-row.cols3 { grid-template-columns: 1fr 1fr 1fr; }
+  @media (max-width: 700px) { .card-row.cols2, .card-row.cols3 { grid-template-columns: 1fr; } }
+  .card h3 { margin-top: 0; font-size: 14px; }
+  .card p { font-size: 13px; margin-bottom: 0; }
+
+  /* Metric cards */
+  .metric-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px 20px; text-align: center; }
+  .metric-card .value { font-size: 28px; font-weight: 700; color: var(--accent); margin-bottom: 4px; }
+  .metric-card .label { font-size: 12px; color: var(--muted); }
+  .metric-card .target { font-size: 11px; color: var(--accent3); margin-top: 4px; }
+
+  /* User story table */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 20px; }
+  th { background: var(--surface2); color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 12px; border-bottom: 1px solid rgba(45,49,72,0.5); vertical-align: top; line-height: 1.5; }
+  tr:last-child td { border-bottom: none; }
+  .story-col { color: #a8b4c4; }
+
+  /* Timeline */
+  .sprint { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px 20px; margin-bottom: 12px; }
+  .sprint-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .sprint-name { font-weight: 700; font-size: 14px; }
+  .sprint-date { font-size: 12px; color: var(--muted); }
+  .task-list { list-style: none; }
+  .task-list li { display: flex; align-items: center; gap: 8px; padding: 5px 0; font-size: 13px; color: #a8b4c4; border-bottom: 1px solid rgba(45,49,72,0.3); }
+  .task-list li:last-child { border-bottom: none; }
+  .task-list li .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .dot-done { background: var(--accent3); }
+  .dot-wip { background: var(--accent2); }
+  .dot-todo { background: var(--muted); }
+  .task-owner { margin-left: auto; font-size: 11px; color: var(--muted); white-space: nowrap; }
+
+  /* Risk table */
+  .risk-level { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+  .risk-high { background: var(--accent5); }
+  .risk-mid { background: var(--accent4); }
+  .risk-low { background: var(--accent3); }
+
+  /* Scope list */
+  .scope-list { list-style: none; }
+  .scope-list li { padding: 7px 0; font-size: 13px; color: #a8b4c4; border-bottom: 1px solid rgba(45,49,72,0.3); display: flex; align-items: flex-start; gap: 8px; }
+  .scope-list li:last-child { border-bottom: none; }
+  .scope-in::before { content: '✓'; color: var(--accent3); font-weight: 700; flex-shrink: 0; }
+  .scope-out::before { content: '✗'; color: var(--accent5); font-weight: 700; flex-shrink: 0; }
+
+  /* Insight boxes */
+  .insight { background: rgba(99,102,241,0.08); border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; padding: 12px 16px; margin: 12px 0 20px; font-size: 13px; color: #a8b4c4; line-height: 1.7; }
+  .insight strong { color: var(--text); }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <div class="title">Linkju — PM Portfolio Case Study</div>
+    <div class="sub">社區管理平台 · MVP 到 PMF</div>
+  </div>
+  <a href="../index.html" class="back">← 回 PM Roadmap</a>
+</header>
+
+<div class="tabs">
+  <button class="tab active" onclick="showTab('prd')">PRD</button>
+  <button class="tab" onclick="showTab('timeline')">Sprint Timeline</button>
+  <button class="tab" onclick="showTab('gtm')">GTM Strategy</button>
+  <button class="tab" onclick="showTab('metrics')">成功指標</button>
+</div>
+
+<!-- PRD Tab -->
+<div class="panel active" id="prd">
+  <div class="section-header">
+    <h2>Linkju MVP — Product Requirements Document</h2>
+    <div class="meta">版本 1.0 · 2026 Q2 · 作者：jobshih（PM/Co-Founder）</div>
+  </div>
+
+  <h3>一、產品概述</h3>
+  <div class="card">
+    <p>Linkju 是以社區管理者為核心的 SaaS 平台，定位為「管理者的 OS」（Manager's Operating System）。台灣約有 40,000 個住宅社區，其中 26,000 個尚未數位化。現有龍頭（智生活）以廣告模式運營，造成平台利益與社區利益長期衝突。</p>
+    <p>Linkju 以管理效率為第一差異化點，向委員會收取 SaaS 月費，居民免費且無廣告使用——透過商業模式根本性修正了智生活的結構缺陷。</p>
+  </div>
+
+  <div class="card-row cols3">
+    <div class="card">
+      <h3>目標用戶 A（主）</h3>
+      <p><strong>社區管理者</strong><br>100–250 戶社區的專任或兼任管委、管理員；需要跨頻道集中處理包裹、公告、報修；平均非技術背景，習慣 LINE 群組。</p>
+    </div>
+    <div class="card">
+      <h3>目標用戶 B（次）</h3>
+      <p><strong>社區居民</strong><br>同棟住戶；主要動機是即時接收包裹通知、查看公告；不願意安裝多一個 App，需要 LINE OA 作為低摩擦入口。</p>
+    </div>
+    <div class="card">
+      <h3>銷售決策者</h3>
+      <p><strong>物業管理公司 / 主委</strong><br>銷售週期 8–12 週；決策考量：成本效益（vs 現有工具）、採用門檻（居民端）、合規性（個資）。</p>
+    </div>
+  </div>
+
+  <h3>二、業務目標</h3>
+  <div class="card-row cols2">
+    <div class="card">
+      <h4>3 個月 OKR</h4>
+      <ul class="scope-list">
+        <li class="scope-in">完成 1 個試點社區上線（≥ 50 戶）</li>
+        <li class="scope-in">居民週活躍率 ≥ 40%</li>
+        <li class="scope-in">包裹通知開啟率 ≥ 70%</li>
+        <li class="scope-in">工單平均回應時間 &lt;24 小時</li>
+        <li class="scope-in">管理者 NPS ≥ 7/10</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>商業模式驗證</h4>
+      <ul class="scope-list">
+        <li class="scope-in">SaaS 月費（per community）付費意願確認</li>
+        <li class="scope-in">管理費代收功能需求調查（P2 規劃依據）</li>
+        <li class="scope-out">廣告收入（永遠不做）</li>
+        <li class="scope-out">管理費代收（MVP 外，P2 功能）</li>
+        <li class="scope-out">Marketplace（修繕媒合）</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>三、P0 功能需求（Launch Scope）</h3>
+
+  <h4>F-01 包裹到貨通知</h4>
+  <table>
+    <thead><tr><th>類型</th><th>使用者故事</th><th>驗收條件</th><th>優先級</th></tr></thead>
+    <tbody>
+      <tr><td>管理者</td><td class="story-col">管理者掃描 / 手動登記包裹後，系統自動推播通知給對應居民</td><td>通知到達時間 &lt;60s；支援多件並行登記；居民可確認取件</td><td><span class="badge badge-p0">P0</span></td></tr>
+      <tr><td>居民</td><td class="story-col">居民收到通知後可查看包裹資訊（件數、到達時間）</td><td>App 內可見詳情；無通知者可以 LINE OA 查詢</td><td><span class="badge badge-p0">P0</span></td></tr>
+      <tr><td>系統</td><td class="story-col">超過 48 小時未取件時，自動發二次提醒</td><td>逾期提醒；可設定關閉；不重複推送</td><td><span class="badge badge-p1">P1</span></td></tr>
+    </tbody>
+  </table>
+
+  <h4>F-02 公告廣播</h4>
+  <table>
+    <thead><tr><th>類型</th><th>使用者故事</th><th>驗收條件</th><th>優先級</th></tr></thead>
+    <tbody>
+      <tr><td>管理者</td><td class="story-col">管理者發佈公告，可指定推播對象（全棟 / 特定樓層 / 特定戶）</td><td>支援 Markdown 文字 + 圖片；推播 &lt;30s；草稿保存</td><td><span class="badge badge-p0">P0</span></td></tr>
+      <tr><td>管理者</td><td class="story-col">管理者可查看每則公告的已讀統計（已讀戶數 / 總戶數）</td><td>僅顯示已讀戶號（不顯示姓名，符合個資法）</td><td><span class="badge badge-p0">P0</span></td></tr>
+      <tr><td>居民</td><td class="story-col">居民可在 App 或 LINE OA 查看歷史公告列表</td><td>按時間排序；支援搜尋；已讀 / 未讀狀態</td><td><span class="badge badge-p0">P0</span></td></tr>
+    </tbody>
+  </table>
+
+  <h4>F-03 報修工單</h4>
+  <table>
+    <thead><tr><th>類型</th><th>使用者故事</th><th>驗收條件</th><th>優先級</th></tr></thead>
+    <tbody>
+      <tr><td>居民</td><td class="story-col">居民可填寫報修單（類別、描述、照片），提交後收到單號</td><td>支援 4 種工單類型；照片上傳 S3/R2；單號自動產生</td><td><span class="badge badge-p0">P0</span></td></tr>
+      <tr><td>管理者</td><td class="story-col">管理者可在 Web Dashboard 看到所有待處理工單並更新狀態</td><td>狀態：待接單 / 處理中 / 已完成；可留言回覆</td><td><span class="badge badge-p0">P0</span></td></tr>
+      <tr><td>居民</td><td class="story-col">居民可追蹤工單進度並收到狀態更新推播</td><td>每次狀態變更推播；可在 App 查看完整歷程</td><td><span class="badge badge-p0">P0</span></td></tr>
+    </tbody>
+  </table>
+
+  <h4>F-04 帳號 / 角色管理</h4>
+  <table>
+    <thead><tr><th>類型</th><th>使用者故事</th><th>驗收條件</th><th>優先級</th></tr></thead>
+    <tbody>
+      <tr><td>委員會</td><td class="story-col">主委可邀請管理員、新增委員，並設定各角色權限</td><td>角色：主委 / 管理員 / 委員 / 居民；權限矩陣清晰</td><td><span class="badge badge-p0">P0</span></td></tr>
+      <tr><td>管理者</td><td class="story-col">管理者可批次匯入住戶名單（戶號、聯絡方式）</td><td>支援 CSV 匯入；自動發送邀請 LINE；重複戶號警告</td><td><span class="badge badge-p0">P0</span></td></tr>
+    </tbody>
+  </table>
+
+  <h3>四、非功能需求</h3>
+  <div class="card-row cols2">
+    <div class="card">
+      <h4>效能 / 可靠性</h4>
+      <ul class="scope-list">
+        <li class="scope-in">FCM 推播 P95 &lt;60 秒</li>
+        <li class="scope-in">API P95 &lt;200ms（讀取）</li>
+        <li class="scope-in">月可用率 ≥ 99.5%</li>
+        <li class="scope-in">FCM 無效 token 自動清除</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>安全 / 個資</h4>
+      <ul class="scope-list">
+        <li class="scope-in">JWT 15 分鐘 access token + 30 天 refresh rotation</li>
+        <li class="scope-in">所有 PII 操作記錄 audit log，保存 5 年</li>
+        <li class="scope-in">已讀名單僅顯示戶號不顯示姓名</li>
+        <li class="scope-in">GDPR-aligned 資料刪除機制</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>五、MVP 範圍邊界</h3>
+  <div class="card-row cols2">
+    <div class="card">
+      <h4>MVP 內（Launch）</h4>
+      <ul class="scope-list">
+        <li class="scope-in">iOS / Android 居民端 App</li>
+        <li class="scope-in">Web Dashboard（管理者）</li>
+        <li class="scope-in">LINE OA 整合（低摩擦備援）</li>
+        <li class="scope-in">FCM Push Notification</li>
+        <li class="scope-in">包裹 / 公告 / 工單 / 帳號 4 大功能</li>
+        <li class="scope-in">S3/R2 檔案存儲</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>MVP 外（Post-MVP）</h4>
+      <ul class="scope-list">
+        <li class="scope-out">管理費代收 / 線上繳費（P2）</li>
+        <li class="scope-out">門禁整合 / 訪客管理（P2）</li>
+        <li class="scope-out">Marketplace 修繕媒合（P3）</li>
+        <li class="scope-out">多棟集中管理 Dashboard（P2，物管公司場景）</li>
+        <li class="scope-out">AI 自動分類工單（P3）</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>六、已知風險</h3>
+  <table>
+    <thead><tr><th>風險</th><th>嚴重度</th><th>緩解策略</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>居民 App 採用率低（習慣 LINE）</td>
+        <td><span class="risk-level risk-high"></span><strong>高</strong></td>
+        <td>LINE OA 作為雙軌入口；onboarding 流程設計要讓 LINE 用戶看到 App 優勢</td>
+      </tr>
+      <tr>
+        <td>主委更換 → 合約風險</td>
+        <td><span class="risk-level risk-mid"></span>中</td>
+        <td>物管公司作為 anchor buyer；合約綁物管層而非個人主委</td>
+      </tr>
+      <tr>
+        <td>LINE OA 政策異動</td>
+        <td><span class="risk-level risk-mid"></span>中</td>
+        <td>原生 App 作為主渠道；LINE OA 視為補充，不在關鍵路徑上建立依賴</td>
+      </tr>
+      <tr>
+        <td>個資法合規（PII 外洩）</td>
+        <td><span class="risk-level risk-high"></span>高</td>
+        <td>已讀名單僅顯示戶號；audit log 5 年；上線前法律審查</td>
+      </tr>
+      <tr>
+        <td>已讀通知設計引發居民反感</td>
+        <td><span class="risk-level risk-low"></span>低</td>
+        <td>顯示戶號不顯示姓名；設計隱私說明；UX 研究協議已建立</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Timeline Tab -->
+<div class="panel" id="timeline">
+  <div class="section-header">
+    <h2>Sprint Plan — 8 週 MVP 衝刺</h2>
+    <div class="meta">三個平行 Track：Backend · Web Dashboard · Mobile App</div>
+  </div>
+
+  <div class="insight">
+    <strong>時程設計原則：</strong>Sprint 0 優先打通後端基礎架構（認證、多租戶、Notification 基礎設施），確保三個 track 在 Sprint 1 起可以平行開發，避免後端成為瓶頸。關鍵路徑在 Mobile FCM push token 與後端整合的時間點。
+  </div>
+
+  <div class="sprint">
+    <div class="sprint-header">
+      <span class="sprint-name">Sprint 0 — 基礎建設</span>
+      <span class="sprint-date">Week 1–2</span>
+      <span class="badge badge-done">已完成</span>
+    </div>
+    <ul class="task-list">
+      <li><span class="dot dot-done"></span>NestJS + PostgreSQL + Redis 基礎架構建立<span class="task-owner">Backend</span></li>
+      <li><span class="dot dot-done"></span>JWT 認證系統（15min / 30d rotation）<span class="task-owner">Backend</span></li>
+      <li><span class="dot dot-done"></span>多租戶架構（building_id in JWT + BuildingGuard）<span class="task-owner">Backend</span></li>
+      <li><span class="dot dot-done"></span>FCM Push Notification 基礎設施（sendEachForMulticast）<span class="task-owner">Backend</span></li>
+      <li><span class="dot dot-done"></span>S3/R2 presigned URL 上傳流程<span class="task-owner">Backend</span></li>
+      <li><span class="dot dot-done"></span>11 張資料庫 Schema 設計（UUID, timestamptz）<span class="task-owner">Backend</span></li>
+      <li><span class="dot dot-done"></span>Design System 建立（890 行，Next.js 14 + Tailwind）<span class="task-owner">Web</span></li>
+      <li><span class="dot dot-done"></span>UX 研究協議 + 使用者故事文件（30 個 API endpoint 定義）<span class="task-owner">PM</span></li>
+      <li><span class="dot dot-done"></span>52 個測試案例撰寫<span class="task-owner">QA</span></li>
+      <li><span class="dot dot-done"></span>Mobile App 骨架建立（FCM push-token 登錄流程 WIP）<span class="task-owner">Mobile</span></li>
+    </ul>
+  </div>
+
+  <div class="sprint">
+    <div class="sprint-header">
+      <span class="sprint-name">Sprint 1 — 核心功能 Phase 1</span>
+      <span class="sprint-date">Week 3–4</span>
+      <span class="badge badge-wip">進行中</span>
+    </div>
+    <ul class="task-list">
+      <li><span class="dot dot-done"></span>公告模組 API（CRUD + 多受眾推播）<span class="task-owner">Backend</span></li>
+      <li><span class="dot dot-done"></span>Web 公告發布介面（大致完成）<span class="task-owner">Web</span></li>
+      <li><span class="dot dot-wip"></span>已讀追蹤（戶號聚合，PII-safe）<span class="task-owner">Backend</span></li>
+      <li><span class="dot dot-wip"></span>Mobile FCM push-token 登錄（本週上線）<span class="task-owner">Mobile</span></li>
+      <li><span class="dot dot-wip"></span>帳號管理 / 角色授權 API<span class="task-owner">Backend</span></li>
+      <li><span class="dot dot-todo"></span>Web 帳號管理介面 + 住戶 CSV 批次匯入<span class="task-owner">Web</span></li>
+      <li><span class="dot dot-todo"></span>Mobile 公告列表 + 通知接收<span class="task-owner">Mobile</span></li>
+      <li><span class="dot dot-todo"></span>Empty state 設計（Home Tab 新居民）<span class="task-owner">Design</span></li>
+      <li><span class="dot dot-todo"></span>QR Code 報到流程設計決策（待 PM 拍板）<span class="task-owner">PM</span></li>
+    </ul>
+  </div>
+
+  <div class="sprint">
+    <div class="sprint-header">
+      <span class="sprint-name">Sprint 2 — 核心功能 Phase 2</span>
+      <span class="sprint-date">Week 5–6</span>
+      <span class="badge badge-todo">待開始</span>
+    </div>
+    <ul class="task-list">
+      <li><span class="dot dot-todo"></span>包裹模組 API（登記、通知、取件確認、逾期提醒）<span class="task-owner">Backend</span></li>
+      <li><span class="dot dot-todo"></span>工單模組 API（4 類別、狀態流、留言）<span class="task-owner">Backend</span></li>
+      <li><span class="dot dot-todo"></span>工單類別欄位衝突解決（PM 決策後執行）<span class="task-owner">Backend</span></li>
+      <li><span class="dot dot-todo"></span>Web 包裹管理 Dashboard<span class="task-owner">Web</span></li>
+      <li><span class="dot dot-todo"></span>Web 工單管理介面<span class="task-owner">Web</span></li>
+      <li><span class="dot dot-todo"></span>Mobile 包裹通知接收 + 查看<span class="task-owner">Mobile</span></li>
+      <li><span class="dot dot-todo"></span>Mobile 工單提交流程（含拍照）<span class="task-owner">Mobile</span></li>
+      <li><span class="dot dot-todo"></span>LINE OA 整合（通知備援渠道）<span class="task-owner">Backend</span></li>
+      <li><span class="dot dot-todo"></span>推播通知 UI 引導設計（iOS 權限授權流程）<span class="task-owner">Design</span></li>
+    </ul>
+  </div>
+
+  <div class="sprint">
+    <div class="sprint-header">
+      <span class="sprint-name">Sprint 3 — 整合 · 測試 · 試點準備</span>
+      <span class="sprint-date">Week 7–8</span>
+      <span class="badge badge-todo">待開始</span>
+    </div>
+    <ul class="task-list">
+      <li><span class="dot dot-todo"></span>E2E 整合測試（52 case 執行）<span class="task-owner">QA</span></li>
+      <li><span class="dot dot-todo"></span>效能壓測（FCM P95 &lt;60s；API P95 &lt;200ms）<span class="task-owner">Backend</span></li>
+      <li><span class="dot dot-todo"></span>個資 / Audit Log 合規審查<span class="task-owner">PM + Legal</span></li>
+      <li><span class="dot dot-todo"></span>App Store / Google Play 送審<span class="task-owner">Mobile</span></li>
+      <li><span class="dot dot-todo"></span>試點社區 onboarding 材料（管理者操作手冊、居民說明）<span class="task-owner">PM</span></li>
+      <li><span class="dot dot-todo"></span>分析埋點（成功指標追蹤）<span class="task-owner">Backend + PM</span></li>
+      <li><span class="dot dot-todo"></span>試點社區上線（≥50 戶）<span class="task-owner">全員</span></li>
+    </ul>
+  </div>
+
+  <h3>關鍵未解決議題（PM Action Items）</h3>
+  <table>
+    <thead><tr><th>#</th><th>議題</th><th>影響範圍</th><th>決策截止</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>推播通知 iOS 權限引導 UI 設計</td><td>Mobile · 採用率</td><td>Sprint 1 結束前</td></tr>
+      <tr><td>2</td><td>QR Code 報到流程（vs 邀請碼 vs 手動匯入）</td><td>Onboarding · UX</td><td>Sprint 1 結束前</td></tr>
+      <tr><td>3</td><td>管理員端：Mobile App or Web-only？</td><td>Mobile scope · 資源分配</td><td>Sprint 2 開始前</td></tr>
+      <tr><td>4</td><td>工單類別欄位（F-03）：PM spec vs Design spec 衝突</td><td>Backend · QA</td><td>Sprint 2 開始前</td></tr>
+      <tr><td>5</td><td>居民 Home Tab 新戶 empty state 設計</td><td>UX · 第一印象</td><td>Sprint 1 結束前</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- GTM Tab -->
+<div class="panel" id="gtm">
+  <div class="section-header">
+    <h2>GTM Strategy — 市場進入策略</h2>
+    <div class="meta">雙軌並行：未觸及市場（Greenfield）× 存量替換（Win-back）</div>
+  </div>
+
+  <h3>一、市場結構分析</h3>
+  <div class="card-row cols3">
+    <div class="metric-card">
+      <div class="value">40,000</div>
+      <div class="label">台灣住宅社區總數</div>
+    </div>
+    <div class="metric-card">
+      <div class="value">26,000</div>
+      <div class="label">未數位化（Greenfield TAM）</div>
+      <div class="target">↑ 主要進攻目標</div>
+    </div>
+    <div class="metric-card">
+      <div class="value">6,500+</div>
+      <div class="label">智生活不滿用戶估計</div>
+      <div class="target">↑ Win-back 目標</div>
+    </div>
+  </div>
+
+  <div class="insight">
+    <strong>競爭洞察：</strong>智生活 80% 市佔是建立在「包裹通知 + 公告 + 低摩擦採用」上，而非付費功能的競爭壁壘。但廣告驅動的商業模式造成結構性利益衝突——對社區不友善的廣告是切入點，而非功能缺口。
+  </div>
+
+  <h3>二、雙軌 GTM 策略</h3>
+  <div class="card-row cols2">
+    <div class="card">
+      <h3>Track A — Greenfield（未觸及市場）</h3>
+      <p><strong>進攻對象：</strong>仍用 WhatsApp / LINE 群組 / Excel 管理的 26,000 個社區</p>
+      <p><strong>Entry point：</strong>物業管理公司（PMC）——一個 PMC 管 10–50 棟，是效率乘數</p>
+      <p><strong>價值主張：</strong>「多棟統一管理」效率提升，而非「功能豐富」</p>
+      <p><strong>銷售週期：</strong>8–12 週（PMC 決策者 → 試點社區 → 擴展）</p>
+    </div>
+    <div class="card">
+      <h3>Track B — Win-back（存量替換）</h3>
+      <p><strong>進攻對象：</strong>智生活廣告不滿用戶，尤其 B1 型（自管社區，決策最快）</p>
+      <p><strong>切入點：</strong>「無廣告，管理費模式」——觸達那些已被廣告困擾的主委</p>
+      <p><strong>移轉障礙：</strong>居民需重新下載 App；需設計流暢的資料遷移體驗</p>
+      <p><strong>銷售週期：</strong>4–8 週（已有產品意識，決策更快）</p>
+    </div>
+  </div>
+
+  <h3>三、試點實驗設計</h3>
+  <div class="card">
+    <p>在 Series A 前，同時跑兩個試點驗證 GTM 假設，勝者決定資源分配：</p>
+    <table>
+      <thead><tr><th>試點</th><th>目標</th><th>成功判斷</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Greenfield 試點</strong></td><td>物管公司 → 社區的 B2B 銷售流程順暢度</td><td>Onboarding &lt;2 天；管理者滿意度 ≥7/10</td></tr>
+        <tr><td><strong>Win-back 試點</strong></td><td>從智生活遷移的體驗 + 「無廣告」是否真正是 switching trigger</td><td>居民採用率 ≥40%；主委主動推薦意願 ≥60%</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>四、營收模式演進</h3>
+  <div class="card-row cols3">
+    <div class="card">
+      <h3>Phase 1（MVP）</h3>
+      <p>固定 SaaS 月費<br>per community<br><span style="color:var(--muted);font-size:12px">驗證付費意願</span></p>
+    </div>
+    <div class="card">
+      <h3>Phase 2（P2 功能上線）</h3>
+      <p>SaaS + 管理費代收手續費 1–2%<br><span style="color:var(--accent3);font-size:12px">↑ 6.6x LTV 乘數</span><br><span style="color:var(--muted);font-size:12px">150戶：NT$600→NT$4,000/月</span></p>
+    </div>
+    <div class="card">
+      <h3>Phase 3（成熟期）</h3>
+      <p>SaaS + 代收手續費 + Marketplace 佣金<br><span style="color:var(--muted);font-size:12px">修繕、清潔媒合</span></p>
+    </div>
+  </div>
+</div>
+
+<!-- Metrics Tab -->
+<div class="panel" id="metrics">
+  <div class="section-header">
+    <h2>成功指標框架</h2>
+    <div class="meta">北極星指標 × 先行指標 × 護欄指標</div>
+  </div>
+
+  <h3>北極星指標（North Star Metric）</h3>
+  <div class="card" style="border-color:var(--accent);background:rgba(99,102,241,0.06)">
+    <h3 style="color:var(--accent);margin-top:0">週活躍管理者數 × 社區管理操作完成率</h3>
+    <p>選擇此指標的理由：Linkju 的價值核心是「讓管理者效率提升」，而非居民黏著度。管理者每週持續使用且完成核心操作（登記包裹、發公告、處理工單），才代表真正創造了價值——這個指標同時捕捉了採用廣度（週活人數）與使用深度（操作完成率）。</p>
+  </div>
+
+  <h3>3 個月試點目標</h3>
+  <div class="card-row" style="grid-template-columns:repeat(5,1fr);gap:12px">
+    <div class="metric-card">
+      <div class="value">40%</div>
+      <div class="label">居民週活率</div>
+      <div class="target">WAU / 總居民數</div>
+    </div>
+    <div class="metric-card">
+      <div class="value">70%</div>
+      <div class="label">通知開啟率</div>
+      <div class="target">FCM opened / sent</div>
+    </div>
+    <div class="metric-card">
+      <div class="value">60%</div>
+      <div class="label">48h 公告已讀</div>
+      <div class="target">48h 內讀取 / 總戶數</div>
+    </div>
+    <div class="metric-card">
+      <div class="value">&lt;24h</div>
+      <div class="label">工單回應時間</div>
+      <div class="target">管理者首次回應</div>
+    </div>
+    <div class="metric-card">
+      <div class="value">7/10</div>
+      <div class="label">管理者滿意度</div>
+      <div class="target">4 週後問卷 NPS</div>
+    </div>
+  </div>
+
+  <h3>護欄指標（Guard Rails）</h3>
+  <table>
+    <thead><tr><th>指標</th><th>上限</th><th>說明</th></tr></thead>
+    <tbody>
+      <tr><td>FCM 推播失敗率</td><td>&lt;5%</td><td>含 invalid token；超過觸發工程 alert</td></tr>
+      <tr><td>App Crash Rate</td><td>&lt;1%</td><td>Firebase Crashlytics 監控</td></tr>
+      <tr><td>PII-相關客訴</td><td>0</td><td>任何個資投訴立即 P0 處理</td></tr>
+      <tr><td>未處理工單逾 72h</td><td>&lt;10%</td><td>超過觸發管理者提醒</td></tr>
+    </tbody>
+  </table>
+
+  <h3>指標演進路徑</h3>
+  <div class="card">
+    <table>
+      <thead><tr><th>里程碑</th><th>新增追蹤指標</th><th>為何這時開始追蹤</th></tr></thead>
+      <tbody>
+        <tr><td><strong>試點上線（3mo）</strong></td><td>WAU、開啟率、工單回應時間、管理者 NPS</td><td>驗證核心使用行為</td></tr>
+        <tr><td><strong>擴展到 10 社區（6mo）</strong></td><td>社區 Churn Rate、LTV、CAC（B2B 銷售漏斗）</td><td>驗證商業模型可持續性</td></tr>
+        <tr><td><strong>代收功能上線（P2）</strong></td><td>代收滲透率、ARPU 變化、LTV / CAC ratio</td><td>驗證 6.6x LTV 乘數假設</td></tr>
+        <tr><td><strong>Pre-Series A</strong></td><td>NDR（Net Dollar Retention）、GRR（Gross Retention）</td><td>投資人標準 SaaS 指標</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+function showTab(id) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.target.classList.add('active');
+}
+</script>
+</body>
+</html>
