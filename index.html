@@ -308,7 +308,16 @@
   .portfolio-desc { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 14px; }
   .portfolio-link-a { font-size: 13px; color: var(--accent); font-weight: 600; }
   .portfolio-link-b { font-size: 13px; color: var(--accent2); font-weight: 600; }
+  /* RADAR VIEW */
+  .radar-layout { display: flex; gap: 28px; flex-wrap: wrap; align-items: flex-start; justify-content: center; margin-top: 8px; }
+  .radar-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; }
+  .radar-card-title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+  .radar-card-hint { font-size: 12px; color: var(--muted); margin-bottom: 16px; }
+  .radar-legend { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 14px; }
+  .radar-legend-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--muted); }
+  .radar-legend-dot { width: 10px; height: 10px; border-radius: 50%; }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 </head>
 <body>
 
@@ -322,6 +331,7 @@
     <button class="tab" onclick="switchTab('skills')">技能評估</button>
     <button class="tab" onclick="switchTab('jobs')">第一波職缺</button>
     <button class="tab" onclick="switchTab('portfolio')">PM Portfolio</button>
+    <button class="tab" onclick="switchTab('radar')">技能雷達</button>
   </div>
 </header>
 
@@ -487,6 +497,29 @@
       <div class="portfolio-desc">「信心透明機制」讓 Voipark 以大平台結構上無法跟進的方式差異化。台北 ~110 個高信心停車場作為灘頭陣地，B2B 業者導流費優先於 C-side 訂閱。純 PM 設計調研，無程式碼。</div>
       <div class="portfolio-link-b">查看 Case Study →</div>
     </a>
+  </div>
+</div>
+
+<!-- ========== RADAR TAB ========== -->
+<div class="view" id="view-radar">
+  <div class="section-title">技能雷達</div>
+  <div class="section-sub">點擊任一分類查看細項雷達</div>
+  <div class="radar-layout" style="margin-top:20px">
+    <div class="radar-card">
+      <div class="radar-card-title">八大分類總覽</div>
+      <div class="radar-card-hint">點擊分類名稱或資料點查看細項</div>
+      <canvas id="chart-main" style="max-width:440px;max-height:440px"></canvas>
+      <div class="radar-legend">
+        <div class="radar-legend-item"><div class="radar-legend-dot" style="background:#4f46e5"></div>現有能力</div>
+        <div class="radar-legend-item" style="color:#94a3b8">0% = 待學 · 33% = 部分 · 67% = 學習中 · 100% = 已具備</div>
+      </div>
+    </div>
+    <div class="radar-card" id="radar-sub-card" style="display:none">
+      <div class="radar-card-title" id="sub-radar-title"></div>
+      <div class="radar-card-hint">各技能熟練度</div>
+      <canvas id="chart-sub" style="max-width:380px;max-height:380px"></canvas>
+      <div class="radar-legend" id="sub-legend"></div>
+    </div>
   </div>
 </div>
 
@@ -1090,12 +1123,140 @@ function renderJobs() {
   `).join('');
 }
 
+// ===== RADAR =====
+function statusScore(s) {
+  return { have: 3, partial: 2, learning: 1, need: 0 }[s] ?? 0;
+}
+
+function buildCatGroups() {
+  const cats = {};
+  SKILLS_DATA.forEach(s => {
+    if (!cats[s.cat]) cats[s.cat] = [];
+    cats[s.cat].push(s);
+  });
+  return Object.entries(cats).map(([cat, skills]) => ({
+    cat,
+    score: Math.round(skills.reduce((sum, s) => sum + statusScore(s.status), 0) / skills.length / 3 * 100),
+    skills
+  }));
+}
+
+let mainChart = null, subChart = null, catGroups = null;
+
+function renderMainRadar() {
+  catGroups = buildCatGroups();
+  const ctx = document.getElementById('chart-main').getContext('2d');
+  if (mainChart) mainChart.destroy();
+  mainChart = new Chart(ctx, {
+    type: 'radar',
+    data: {
+      labels: catGroups.map(c => c.cat),
+      datasets: [{
+        label: 'PM 能力',
+        data: catGroups.map(c => c.score),
+        backgroundColor: 'rgba(79,70,229,0.15)',
+        borderColor: 'rgba(79,70,229,0.85)',
+        pointBackgroundColor: 'rgba(79,70,229,0.9)',
+        pointRadius: 5,
+        pointHoverRadius: 8,
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        r: {
+          min: 0, max: 100,
+          ticks: { stepSize: 25, font: { size: 10 }, color: '#94a3b8', backdropColor: 'transparent' },
+          grid: { color: '#e2e8f0' },
+          pointLabels: { font: { size: 12, weight: '600' }, color: '#0f172a' },
+          angleLines: { color: '#e2e8f0' }
+        }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: (c) => ` ${c.raw}%` } }
+      },
+      onClick(event, elements) {
+        if (!elements.length) return;
+        renderSubRadar(catGroups[elements[0].index]);
+      },
+      onHover(event, elements) {
+        event.native.target.style.cursor = elements.length ? 'pointer' : 'default';
+      }
+    }
+  });
+}
+
+function renderSubRadar(catData) {
+  const card = document.getElementById('radar-sub-card');
+  document.getElementById('sub-radar-title').textContent = catData.cat + ' — 細項';
+  card.style.display = 'block';
+
+  const statusLabel = { have: '✓ 已具備', partial: '⟳ 部分', learning: '⟳ 學習中', need: '○ 待學' };
+  const statusColor = { have: '#059669', partial: '#d97706', learning: '#4f46e5', need: '#94a3b8' };
+
+  const labels = catData.skills.map(s => s.skill.length > 14 ? s.skill.slice(0, 14) + '…' : s.skill);
+  const data = catData.skills.map(s => statusScore(s.status) / 3 * 100);
+
+  const ctx = document.getElementById('chart-sub').getContext('2d');
+  if (subChart) subChart.destroy();
+  subChart = new Chart(ctx, {
+    type: 'radar',
+    data: {
+      labels,
+      datasets: [{
+        label: catData.cat,
+        data,
+        backgroundColor: 'rgba(8,145,178,0.15)',
+        borderColor: 'rgba(8,145,178,0.85)',
+        pointBackgroundColor: catData.skills.map(s => statusColor[s.status] || '#94a3b8'),
+        pointRadius: 6,
+        pointHoverRadius: 9,
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        r: {
+          min: 0, max: 100,
+          ticks: { stepSize: 50, font: { size: 10 }, color: '#94a3b8', backdropColor: 'transparent', display: false },
+          grid: { color: '#e2e8f0' },
+          pointLabels: { font: { size: 11 }, color: '#334155' },
+          angleLines: { color: '#e2e8f0' }
+        }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: (c) => {
+              const s = catData.skills[c.dataIndex];
+              return ` ${statusLabel[s.status] || s.status}`;
+            }
+          }
+        }
+      }
+    }
+  });
+
+  const presentStatuses = [...new Set(catData.skills.map(s => s.status))];
+  document.getElementById('sub-legend').innerHTML = presentStatuses.map(k =>
+    `<div class="radar-legend-item"><div class="radar-legend-dot" style="background:${statusColor[k]}"></div>${statusLabel[k]}</div>`
+  ).join('');
+}
+
+let radarInitialized = false;
+
 // ===== TAB SWITCH =====
 function switchTab(name) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   event.target.classList.add('active');
   document.getElementById('view-' + name).classList.add('active');
+  if (name === 'radar' && !radarInitialized) {
+    radarInitialized = true;
+    renderMainRadar();
+  }
 }
 
 // ===== INIT =====
