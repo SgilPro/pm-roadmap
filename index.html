@@ -316,6 +316,34 @@
   .radar-legend { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 14px; }
   .radar-legend-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--muted); }
   .radar-legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+  /* SUB-TABS (技能圖譜 三 views) */
+  .sub-tabs { display:flex; gap:0; margin-bottom:20px; border-bottom:1px solid var(--border); }
+  .sub-tab { padding:7px 16px; font-size:13px; cursor:pointer; border:none; border-bottom:2px solid transparent; margin-bottom:-1px; background:transparent; color:var(--muted); transition:all 0.15s; }
+  .sub-tab.active { color:var(--accent); border-bottom-color:var(--accent); font-weight:600; }
+  .sub-tab:hover:not(.active) { color:var(--text); }
+  .sub-view { display:none; }
+  .sub-view.active { display:block; }
+  /* SNAPSHOT BAR */
+  .snapshot-bar { display:flex; align-items:center; gap:6px; }
+  .snapshot-bar select { font-size:12px; padding:3px 8px; border:1px solid var(--border); border-radius:5px; background:var(--surface); color:var(--text); cursor:pointer; }
+  /* SKILL TREE */
+  .tree-cat { background:var(--surface); border:1px solid var(--border); border-radius:10px; margin-bottom:10px; overflow:hidden; }
+  .tree-cat-header { display:flex; align-items:center; gap:10px; padding:12px 16px; cursor:pointer; user-select:none; background:var(--surface2); }
+  .tree-cat-header:hover { background:#eef2f8; }
+  .tree-toggle { font-size:13px; color:var(--muted); width:14px; display:inline-block; }
+  .tree-cat-name { font-size:13px; font-weight:700; flex:1; }
+  .tree-cat-stats { font-size:11px; color:var(--muted); }
+  .tree-cat-bar { width:80px; height:4px; background:var(--border); border-radius:2px; overflow:hidden; }
+  .tree-cat-bar-fill { height:100%; border-radius:2px; background:var(--accent3); }
+  .tree-skills { padding:10px 16px 14px; display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:4px; }
+  .tree-skill { display:flex; align-items:center; gap:8px; padding:5px 8px; border-radius:6px; }
+  .tree-skill:hover { background:var(--surface2); }
+  .tree-skill-icon { font-size:11px; font-weight:700; width:18px; text-align:center; }
+  .tree-skill-icon.have { color:#059669; }
+  .tree-skill-icon.partial { color:#d97706; }
+  .tree-skill-icon.need { color:#94a3b8; }
+  .tree-skill-name { font-size:13px; flex:1; }
+  .tree-skill-prio { font-size:10px; color:var(--muted); background:var(--bg); border:1px solid var(--border); border-radius:3px; padding:1px 5px; }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 </head>
@@ -328,10 +356,9 @@
   </div>
   <div class="tabs">
     <button class="tab active" onclick="switchTab('roadmap')">Roadmap</button>
-    <button class="tab" onclick="switchTab('skills')">技能評估</button>
+    <button class="tab" onclick="switchTab('skills')">技能圖譜</button>
     <button class="tab" onclick="switchTab('jobs')">第一波職缺</button>
     <button class="tab" onclick="switchTab('portfolio')">PM Portfolio</button>
-    <button class="tab" onclick="switchTab('radar')">技能雷達</button>
   </div>
 </header>
 
@@ -377,23 +404,65 @@
   <div class="roadmap-grid" id="roadmap-grid"></div>
 </div>
 
-<!-- ========== SKILLS TAB ========== -->
+<!-- ========== SKILLS TAB (技能圖譜) ========== -->
 <div class="view" id="view-skills">
-  <div class="section-title">技能評估表</div>
-  <div class="section-sub">基於 Product Compass 32 題評估框架，對應你的背景</div>
-  <div class="skills-table-wrap">
-    <table id="skills-table">
-      <thead>
-        <tr>
-          <th>能力分類</th>
-          <th>技能項目</th>
-          <th>狀態</th>
-          <th>優先度</th>
-          <th>說明</th>
-        </tr>
-      </thead>
-      <tbody id="skills-tbody"></tbody>
-    </table>
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px">
+    <div>
+      <div class="section-title">技能圖譜</div>
+      <div class="section-sub">基於 Product Compass 32 題評估框架，對應你的背景</div>
+    </div>
+    <div class="snapshot-bar">
+      <span style="font-size:12px;color:var(--muted)">歷史版本：</span>
+      <select id="snapshot-select" onchange="onSnapshotChange()">
+        <option value="current">2026-07-23（目前）</option>
+      </select>
+    </div>
+  </div>
+  <div class="sub-tabs">
+    <button class="sub-tab active" onclick="switchSubTab('list')">清單</button>
+    <button class="sub-tab" onclick="switchSubTab('radar')">雷達</button>
+    <button class="sub-tab" onclick="switchSubTab('tree')">技能樹</button>
+  </div>
+  <!-- ── List sub-view ── -->
+  <div class="sub-view active" id="sub-list">
+    <div class="skills-table-wrap">
+      <table id="skills-table">
+        <thead>
+          <tr>
+            <th>能力分類</th>
+            <th>技能項目</th>
+            <th>狀態</th>
+            <th>優先度</th>
+            <th>說明</th>
+          </tr>
+        </thead>
+        <tbody id="skills-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+  <!-- ── Radar sub-view ── -->
+  <div class="sub-view" id="sub-radar">
+    <div class="radar-layout" style="margin-top:20px">
+      <div class="radar-card">
+        <div class="radar-card-title">八大分類總覽</div>
+        <div class="radar-card-hint">點擊分類名稱或資料點查看細項</div>
+        <canvas id="chart-main" style="max-width:440px;max-height:440px"></canvas>
+        <div class="radar-legend">
+          <div class="radar-legend-item"><div class="radar-legend-dot" style="background:#4f46e5"></div>現有能力</div>
+          <div class="radar-legend-item" style="color:#94a3b8">0% = 待學 · 33% = 部分 · 67% = 學習中 · 100% = 已具備</div>
+        </div>
+      </div>
+      <div class="radar-card" id="radar-sub-card" style="display:none">
+        <div class="radar-card-title" id="sub-radar-title"></div>
+        <div class="radar-card-hint">各技能熟練度</div>
+        <canvas id="chart-sub" style="max-width:380px;max-height:380px"></canvas>
+        <div class="radar-legend" id="sub-legend"></div>
+      </div>
+    </div>
+  </div>
+  <!-- ── Skill Tree sub-view ── -->
+  <div class="sub-view" id="sub-tree">
+    <div id="skill-tree" style="margin-top:8px"></div>
   </div>
 </div>
 
@@ -497,29 +566,6 @@
       <div class="portfolio-desc">「信心透明機制」讓 Voipark 以大平台結構上無法跟進的方式差異化。台北 ~110 個高信心停車場作為灘頭陣地，B2B 業者導流費優先於 C-side 訂閱。純 PM 設計調研，無程式碼。</div>
       <div class="portfolio-link-b">查看 Case Study →</div>
     </a>
-  </div>
-</div>
-
-<!-- ========== RADAR TAB ========== -->
-<div class="view" id="view-radar">
-  <div class="section-title">技能雷達</div>
-  <div class="section-sub">點擊任一分類查看細項雷達</div>
-  <div class="radar-layout" style="margin-top:20px">
-    <div class="radar-card">
-      <div class="radar-card-title">八大分類總覽</div>
-      <div class="radar-card-hint">點擊分類名稱或資料點查看細項</div>
-      <canvas id="chart-main" style="max-width:440px;max-height:440px"></canvas>
-      <div class="radar-legend">
-        <div class="radar-legend-item"><div class="radar-legend-dot" style="background:#4f46e5"></div>現有能力</div>
-        <div class="radar-legend-item" style="color:#94a3b8">0% = 待學 · 33% = 部分 · 67% = 學習中 · 100% = 已具備</div>
-      </div>
-    </div>
-    <div class="radar-card" id="radar-sub-card" style="display:none">
-      <div class="radar-card-title" id="sub-radar-title"></div>
-      <div class="radar-card-hint">各技能熟練度</div>
-      <canvas id="chart-sub" style="max-width:380px;max-height:380px"></canvas>
-      <div class="radar-legend" id="sub-legend"></div>
-    </div>
   </div>
 </div>
 
@@ -1034,6 +1080,47 @@ const JOBS_DATA = [
   },
 ];
 
+// ===== SNAPSHOT HISTORY =====
+// 每次更新技能資料時，將舊版 SKILLS_DATA 推入此陣列（含 date 標籤）
+const SKILL_HISTORY = [
+  // { date: "2026-MM-DD", label: "...", data: [...] }
+];
+
+let activeSnapshotKey = "current";
+
+function getActiveSkillsData() {
+  if (activeSnapshotKey === "current") return SKILLS_DATA;
+  const snap = SKILL_HISTORY.find(s => s.date === activeSnapshotKey);
+  return snap ? snap.data : SKILLS_DATA;
+}
+
+function onSnapshotChange() {
+  activeSnapshotKey = document.getElementById('snapshot-select').value;
+  renderSkills();
+  if (radarInitialized) {
+    renderMainRadar();
+    document.getElementById('radar-sub-card').style.display = 'none';
+  }
+  renderSkillTree();
+}
+
+// ===== SUB-TAB =====
+let radarInitialized = false;
+
+function switchSubTab(name) {
+  document.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.sub-view').forEach(v => v.classList.remove('active'));
+  const btn = document.querySelector(`.sub-tab[onclick="switchSubTab('${name}')"]`);
+  if (btn) btn.classList.add('active');
+  const view = document.getElementById('sub-' + name);
+  if (view) view.classList.add('active');
+  if (name === 'radar' && !radarInitialized) {
+    radarInitialized = true;
+    renderMainRadar();
+  }
+  if (name === 'tree') renderSkillTree();
+}
+
 // ===== RENDER ROADMAP =====
 function renderRoadmap() {
   const grid = document.getElementById('roadmap-grid');
@@ -1067,7 +1154,7 @@ function renderRoadmap() {
 // ===== RENDER SKILLS =====
 function renderSkills() {
   const tbody = document.getElementById('skills-tbody');
-  const sorted = [...SKILLS_DATA].sort((a,b) => b.priority - a.priority);
+  const sorted = [...getActiveSkillsData()].sort((a,b) => b.priority - a.priority);
   tbody.innerHTML = sorted.map(s => {
     const badgeClass = s.status === 'have' ? 'have' : s.status === 'partial' ? 'partial' : 'need';
     const badgeLabel = s.status === 'have' ? '✓ 已具備' : s.status === 'partial' ? '⟳ 部分' : '○ 待學';
@@ -1130,7 +1217,7 @@ function statusScore(s) {
 
 function buildCatGroups() {
   const cats = {};
-  SKILLS_DATA.forEach(s => {
+  getActiveSkillsData().forEach(s => {
     if (!cats[s.cat]) cats[s.cat] = [];
     cats[s.cat].push(s);
   });
@@ -1245,7 +1332,45 @@ function renderSubRadar(catData) {
   ).join('');
 }
 
-let radarInitialized = false;
+// ===== SKILL TREE =====
+function renderSkillTree() {
+  const data = getActiveSkillsData();
+  const cats = {};
+  data.forEach(s => {
+    if (!cats[s.cat]) cats[s.cat] = [];
+    cats[s.cat].push(s);
+  });
+  const statusIcon = { have: '✓', partial: '⟳', need: '○' };
+  const container = document.getElementById('skill-tree');
+  container.innerHTML = Object.entries(cats).map(([cat, skills]) => {
+    const sorted = [...skills].sort((a, b) => b.priority - a.priority);
+    const haveCount = skills.filter(s => s.status === 'have').length;
+    const pct = Math.round(haveCount / skills.length * 100);
+    return `<div class="tree-cat" data-open="true">
+      <div class="tree-cat-header" onclick="toggleCat(this)">
+        <span class="tree-toggle">▾</span>
+        <span class="tree-cat-name">${cat}</span>
+        <span class="tree-cat-stats">${haveCount}/${skills.length} 已具備</span>
+        <div class="tree-cat-bar"><div class="tree-cat-bar-fill" style="width:${pct}%"></div></div>
+      </div>
+      <div class="tree-skills">
+        ${sorted.map(s => `<div class="tree-skill">
+          <span class="tree-skill-icon ${s.status}">${statusIcon[s.status] || '○'}</span>
+          <span class="tree-skill-name">${s.skill}</span>
+          <span class="tree-skill-prio">${s.priority}</span>
+        </div>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleCat(header) {
+  const cat = header.parentElement;
+  const isOpen = cat.dataset.open === 'true';
+  cat.dataset.open = isOpen ? 'false' : 'true';
+  cat.querySelector('.tree-toggle').textContent = isOpen ? '▸' : '▾';
+  cat.querySelector('.tree-skills').style.display = isOpen ? 'none' : '';
+}
 
 // ===== TAB SWITCH =====
 function switchTab(name) {
@@ -1253,13 +1378,20 @@ function switchTab(name) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   event.target.classList.add('active');
   document.getElementById('view-' + name).classList.add('active');
-  if (name === 'radar' && !radarInitialized) {
-    radarInitialized = true;
-    renderMainRadar();
-  }
 }
 
 // ===== INIT =====
+// Populate snapshot dropdown with history if any
+(function() {
+  const sel = document.getElementById('snapshot-select');
+  SKILL_HISTORY.forEach(snap => {
+    const opt = document.createElement('option');
+    opt.value = snap.date;
+    opt.textContent = snap.label || snap.date;
+    sel.appendChild(opt);
+  });
+})();
+
 renderRoadmap();
 renderSkills();
 renderJobs();
