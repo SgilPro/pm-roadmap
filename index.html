@@ -344,6 +344,9 @@
   .tree-skill-icon.need { color:#94a3b8; }
   .tree-skill-name { font-size:13px; flex:1; }
   .tree-skill-prio { font-size:10px; color:var(--muted); background:var(--bg); border:1px solid var(--border); border-radius:3px; padding:1px 5px; }
+  .social-badge { font-size:10px; font-weight:600; padding:1px 5px; border-radius:3px; white-space:nowrap; }
+  .social-badge.high { color:#065f46; background:#d1fae5; border:1px solid #6ee7b7; }
+  .social-badge.mid { color:#92400e; background:#fef3c7; border:1px solid #fcd34d; }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 </head>
@@ -410,6 +413,10 @@
     <div>
       <div class="section-title">技能圖譜</div>
       <div class="section-sub">基於 Product Compass 32 題評估框架，對應你的背景</div>
+      <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+        <span class="social-badge high">✓ 可轉移</span><span style="font-size:12px;color:var(--muted)">社創/LFT 背景直接可轉移，翻譯 PM 語言即可</span>
+        <span class="social-badge mid">△ 部分</span><span style="font-size:12px;color:var(--muted)">相關經驗，需補 PM 框架</span>
+      </div>
     </div>
     <div class="snapshot-bar">
       <span style="font-size:12px;color:var(--muted)">歷史版本：</span>
@@ -434,6 +441,7 @@
             <th>狀態</th>
             <th>優先度</th>
             <th>說明</th>
+            <th title="社創/LFT背景可轉移程度">社創</th>
           </tr>
         </thead>
         <tbody id="skills-tbody"></tbody>
@@ -766,38 +774,39 @@ const ROADMAP_DATA = [
 ];
 
 const SKILLS_DATA = [
-  { cat: "商業與策略", skill: "市場規模評估（TAM/SAM/SOM）", status: "need", priority: 60, note: "PDM 面試必考" },
-  { cat: "商業與策略", skill: "Business Model Canvas", status: "need", priority: 55, note: "理解商業邏輯" },
-  { cat: "商業與策略", skill: "競品分析", status: "partial", priority: 80, note: "Phase 1 作業：輸出一份" },
-  { cat: "商業與策略", skill: "Porter's Five Forces", status: "need", priority: 40, note: "概念理解即可" },
-  { cat: "執行力", skill: "OKR 設定", status: "have", priority: 90, note: "Scrum Master 期間用過" },
-  { cat: "執行力", skill: "RICE / MoSCoW 優先序", status: "partial", priority: 85, note: "理論懂，需要實際帶過一輪" },
-  { cat: "執行力", skill: "PRD 撰寫", status: "partial", priority: 95, note: "Phase 1 首要任務" },
-  { cat: "執行力", skill: "Agile / Scrum", status: "have", priority: 95, note: "SM 3個月，直接對應" },
-  { cat: "執行力", skill: "Risk Management", status: "need", priority: 45, note: "PJM 較重要" },
-  { cat: "人員領導", skill: "跨部門溝通", status: "have", priority: 90, note: "工程師 + 獵頭背景都有" },
-  { cat: "人員領導", skill: "Stakeholder Alignment", status: "have", priority: 90, note: "SM 期間實戰過" },
-  { cat: "人員領導", skill: "Executive Communication", status: "need", priority: 70, note: "需要練習 C-level 簡報" },
-  { cat: "人員領導", skill: "Conflict Resolution", status: "have", priority: 75, note: "" },
-  { cat: "數據分析", skill: "GA4 / 分析工具", status: "partial", priority: 90, note: "Phase 1：完成 GA4 認證" },
-  { cat: "數據分析", skill: "SQL（Product Analytics）", status: "partial", priority: 85, note: "Phase 2：Mode Analytics Tutorial" },
-  { cat: "數據分析", skill: "Funnel / Cohort 分析", status: "need", priority: 85, note: "面試必問" },
-  { cat: "數據分析", skill: "A/B Testing 設計", status: "need", priority: 70, note: "" },
-  { cat: "數據分析", skill: "North Star Metric", status: "partial", priority: 80, note: "理解概念，需要實例" },
-  { cat: "產品發現", skill: "User Interview 設計", status: "need", priority: 80, note: "PDM 核心，需補" },
-  { cat: "產品發現", skill: "Jobs to Be Done（JTBD）", status: "partial", priority: 75, note: "概念理解中" },
-  { cat: "產品發現", skill: "Usability Testing", status: "need", priority: 65, note: "" },
-  { cat: "產品發現", skill: "Problem Definition", status: "have", priority: 90, note: "工程師debug思維直接轉" },
-  { cat: "實驗驗證", skill: "MVP 定義", status: "partial", priority: 85, note: "理論懂，需要輸出案例" },
-  { cat: "實驗驗證", skill: "A/B Testing 執行", status: "need", priority: 70, note: "" },
-  { cat: "實驗驗證", skill: "假型（Fake Door）測試", status: "need", priority: 50, note: "" },
-  { cat: "產品行銷", skill: "GTM Strategy", status: "need", priority: 60, note: "PJM 較少用，PDM 必要" },
-  { cat: "產品行銷", skill: "Value Proposition 設計", status: "need", priority: 70, note: "" },
-  { cat: "產品行銷", skill: "Launch Planning", status: "need", priority: 65, note: "" },
-  { cat: "技術能力", skill: "API / 系統架構溝通", status: "have", priority: 95, note: "最大優勢，直接命中JD" },
-  { cat: "技術能力", skill: "前端可行性評估", status: "have", priority: 90, note: "" },
-  { cat: "技術能力", skill: "後端 / DB 邏輯理解", status: "have", priority: 85, note: "" },
-  { cat: "技術能力", skill: "Figma 讀稿 / 基礎操作", status: "have", priority: 80, note: "" },
+  // social: "high"=社創背景直接可轉移 "mid"=部分可轉移 "low"=需從頭學（SE或純商業）
+  { cat: "商業與策略", skill: "市場規模評估（TAM/SAM/SOM）", status: "need", priority: 60, note: "PDM 面試必考", social: "low" },
+  { cat: "商業與策略", skill: "Business Model Canvas", status: "need", priority: 55, note: "理解商業邏輯", social: "mid" },
+  { cat: "商業與策略", skill: "競品分析", status: "partial", priority: 80, note: "Phase 1 作業：輸出一份", social: "low" },
+  { cat: "商業與策略", skill: "Porter's Five Forces", status: "need", priority: 40, note: "概念理解即可", social: "low" },
+  { cat: "執行力", skill: "OKR 設定", status: "have", priority: 90, note: "Scrum Master 期間用過", social: "mid" },
+  { cat: "執行力", skill: "RICE / MoSCoW 優先序", status: "partial", priority: 85, note: "理論懂，需要實際帶過一輪", social: "low" },
+  { cat: "執行力", skill: "PRD 撰寫", status: "partial", priority: 95, note: "Phase 1 首要任務", social: "low" },
+  { cat: "執行力", skill: "Agile / Scrum", status: "have", priority: 95, note: "SM 3個月，直接對應", social: "low" },
+  { cat: "執行力", skill: "Risk Management", status: "need", priority: 45, note: "PJM 較重要", social: "mid" },
+  { cat: "人員領導", skill: "跨部門溝通", status: "have", priority: 90, note: "工程師 + 獵頭背景都有", social: "high" },
+  { cat: "人員領導", skill: "Stakeholder Alignment", status: "have", priority: 90, note: "SM 期間實戰過", social: "high" },
+  { cat: "人員領導", skill: "Executive Communication", status: "need", priority: 70, note: "需要練習 C-level 簡報", social: "mid" },
+  { cat: "人員領導", skill: "Conflict Resolution", status: "have", priority: 75, note: "", social: "high" },
+  { cat: "數據分析", skill: "GA4 / 分析工具", status: "partial", priority: 90, note: "Phase 1：完成 GA4 認證", social: "low" },
+  { cat: "數據分析", skill: "SQL（Product Analytics）", status: "partial", priority: 85, note: "Phase 2：Mode Analytics Tutorial", social: "low" },
+  { cat: "數據分析", skill: "Funnel / Cohort 分析", status: "need", priority: 85, note: "面試必問", social: "low" },
+  { cat: "數據分析", skill: "A/B Testing 設計", status: "need", priority: 70, note: "", social: "low" },
+  { cat: "數據分析", skill: "North Star Metric", status: "partial", priority: 80, note: "理解概念，需要實例", social: "low" },
+  { cat: "產品發現", skill: "User Interview 設計", status: "need", priority: 80, note: "PDM 核心，需補", social: "high" },
+  { cat: "產品發現", skill: "Jobs to Be Done（JTBD）", status: "partial", priority: 75, note: "概念理解中", social: "mid" },
+  { cat: "產品發現", skill: "Usability Testing", status: "need", priority: 65, note: "", social: "low" },
+  { cat: "產品發現", skill: "Problem Definition", status: "have", priority: 90, note: "工程師debug思維直接轉", social: "high" },
+  { cat: "實驗驗證", skill: "MVP 定義", status: "partial", priority: 85, note: "理論懂，需要輸出案例", social: "mid" },
+  { cat: "實驗驗證", skill: "A/B Testing 執行", status: "need", priority: 70, note: "", social: "low" },
+  { cat: "實驗驗證", skill: "假型（Fake Door）測試", status: "need", priority: 50, note: "", social: "low" },
+  { cat: "產品行銷", skill: "GTM Strategy", status: "need", priority: 60, note: "PJM 較少用，PDM 必要", social: "low" },
+  { cat: "產品行銷", skill: "Value Proposition 設計", status: "need", priority: 70, note: "", social: "mid" },
+  { cat: "產品行銷", skill: "Launch Planning", status: "need", priority: 65, note: "", social: "low" },
+  { cat: "技術能力", skill: "API / 系統架構溝通", status: "have", priority: 95, note: "最大優勢，直接命中JD", social: "low" },
+  { cat: "技術能力", skill: "前端可行性評估", status: "have", priority: 90, note: "", social: "low" },
+  { cat: "技術能力", skill: "後端 / DB 邏輯理解", status: "have", priority: 85, note: "", social: "low" },
+  { cat: "技術能力", skill: "Figma 讀稿 / 基礎操作", status: "have", priority: 80, note: "", social: "low" },
 ];
 
 const JOBS_DATA = [
@@ -1170,6 +1179,7 @@ function renderSkills() {
         </div>
       </td>
       <td style="color:var(--muted);font-size:12px">${s.note}</td>
+      <td>${s.social === 'high' ? '<span class="social-badge high">✓ 可轉移</span>' : s.social === 'mid' ? '<span class="social-badge mid">△ 部分</span>' : ''}</td>
     </tr>`;
   }).join('');
 }
@@ -1357,6 +1367,7 @@ function renderSkillTree() {
         ${sorted.map(s => `<div class="tree-skill">
           <span class="tree-skill-icon ${s.status}">${statusIcon[s.status] || '○'}</span>
           <span class="tree-skill-name">${s.skill}</span>
+          ${s.social === 'high' ? '<span class="social-badge high">社創✓</span>' : s.social === 'mid' ? '<span class="social-badge mid">社創△</span>' : ''}
           <span class="tree-skill-prio">${s.priority}</span>
         </div>`).join('')}
       </div>
