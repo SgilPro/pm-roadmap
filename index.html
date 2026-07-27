@@ -322,6 +322,13 @@
   .pdm-badge.high { background: rgba(5,150,105,0.12); color: #059669; }
   .pdm-badge.mid { background: rgba(217,119,6,0.12); color: var(--accent4); }
   .pdm-badge.low { background: #f1f5f9; color: var(--muted); }
+  .health-badge { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 4px; }
+  .health-badge.closed { background: rgba(220,38,38,0.10); color: var(--accent5); }
+  .health-badge.unknown { background: #f1f5f9; color: var(--muted); border: 1px solid var(--border); }
+  /* Dead listing: kept on the page as evidence of shelf life, but visibly out of the running. */
+  .job-closed { opacity: 0.5; }
+  .job-closed .job-title { text-decoration: line-through; }
+  .job-closed .job-link { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
 
   /* Portfolio */
   .tier-btn {
@@ -528,7 +535,7 @@
 <!-- ========== JOBS TAB ========== -->
 <div class="view" id="view-jobs">
   <div class="section-title">第一波推薦職缺</div>
-  <div class="section-sub">依背景匹配度排序，5 個作為試水溫投遞</div>
+  <div class="section-sub">依背景匹配度排序，主推那批作為試水溫投遞</div>
   <div class="jobs-checked" id="jobs-checked"></div>
 
   <!-- Readiness Assessment -->
@@ -588,10 +595,10 @@
   </div>
 
   <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
-    <button class="tier-btn active" onclick="filterJobs('top')" id="btn-top">主推 5 個</button>
+    <button class="tier-btn active" onclick="filterJobs('top')" id="btn-top">主推</button>
     <button class="tier-btn" onclick="filterJobs('track')" id="btn-track">持續觀察</button>
     <button class="tier-btn" onclick="filterJobs('later')" id="btn-later">暫緩 / 參考</button>
-    <button class="tier-btn" onclick="filterJobs('all')" id="btn-all">全部 23 個</button>
+    <button class="tier-btn" onclick="filterJobs('all')" id="btn-all">全部</button>
   </div>
   <div class="jobs-grid" id="jobs-grid"></div>
 </div>
@@ -644,9 +651,11 @@ const PIPELINE_DATA = {
   updatedAt: "2026-07-27"
 };
 
-// Job listings go stale in 4–8 weeks. This is when the list was last compiled by hand
-// (commit 5b1ff40) — NOT a date the 23 links were re-verified.
-const JOBS_META = { checkedAt: "2026-06-30" };
+// 2026-07-27: all 23 URLs were actually fetched (two passes, agreeing).
+// health: "open" = HTTP 200 | "closed" = HTTP 404 | "unknown" = could not verify
+// The 104.com.tw link blocks automated requests (403) — that is NOT evidence it is closed.
+// Re-run the sweep by hand before trusting this date again.
+const JOBS_META = { checkedAt: "2026-07-27", checkMethod: "逐一抓取職缺頁，依 HTTP 狀態碼判定" };
 
 // status: "have" | "learning" | "need" | "wont"
 // "wont" = 刻意不學（scope cut）。保留可見，不刪除；每項須有 reason。
@@ -898,7 +907,7 @@ const SKILLS_DATA = [
 const JOBS_DATA = [
   // tier: "top" = 主推投遞 | "track" = 持續觀察 | "later" = 暫緩
   {
-    rank: 1, tier: "top",
+    rank: 1, tier: "top", health: "open",
     title: "AI Project Manager (PM)",
     company: "MaiAgent 思邁智能",
     pdmExposure: "high",
@@ -911,7 +920,7 @@ const JOBS_DATA = [
     url: "https://www.cake.me/companies/MaiAgent/jobs/ai-project-manager-pm"
   },
   {
-    rank: 2, tier: "top",
+    rank: 2, tier: "top", health: "open",
     title: "Project Manager（Shopify 系統整合）",
     company: "Akohub",
     pdmExposure: "mid",
@@ -924,7 +933,7 @@ const JOBS_DATA = [
     url: "https://www.cake.me/companies/akohub/jobs/project-manager-shopify-store-system-integration"
   },
   {
-    rank: 3, tier: "top",
+    rank: 3, tier: "top", health: "closed",
     title: "Project Manager 專案經理",
     company: "25sprout 新芽網路",
     pdmExposure: "mid",
@@ -937,7 +946,7 @@ const JOBS_DATA = [
     url: "https://www.cake.me/companies/25sprout_LLC/jobs/project-manager-c44"
   },
   {
-    rank: 4, tier: "top",
+    rank: 4, tier: "top", health: "open",
     title: "產品經理 PM（Tasker 外包網）",
     company: "addcn",
     pdmExposure: "high",
@@ -950,7 +959,7 @@ const JOBS_DATA = [
     url: "https://www.cake.me/companies/addcn/jobs/tasker-outsourcing-network-product-manager-pm"
   },
   {
-    rank: 5, tier: "top",
+    rank: 5, tier: "top", health: "open",
     title: "Junior Project Manager（RPA 產品）",
     company: "IsCoolLab",
     pdmExposure: "low",
@@ -963,7 +972,7 @@ const JOBS_DATA = [
     url: "https://www.cake.me/companies/iscoollab/jobs/junior-project-manager-502"
   },
   {
-    rank: 6, tier: "track",
+    rank: 6, tier: "track", health: "open",
     title: "Associate Product Manager",
     company: "GoFreight",
     type: "APM",
@@ -975,7 +984,7 @@ const JOBS_DATA = [
     url: "https://www.cake.me/companies/GoFreight/jobs/associate-product-manager-ccf"
   },
   {
-    rank: 7, tier: "track",
+    rank: 7, tier: "track", health: "open",
     title: "Product Manager",
     company: "雙橡教育 Twin Oaks",
     type: "PDM",
@@ -987,7 +996,7 @@ const JOBS_DATA = [
     url: "https://www.cake.me/companies/twin-oaks/jobs/2026Spring-PM"
   },
   {
-    rank: 8, tier: "track",
+    rank: 8, tier: "track", health: "open",
     title: "Product Manager（電商 SaaS）",
     company: "Shopline",
     type: "PDM",
@@ -999,7 +1008,7 @@ const JOBS_DATA = [
     url: "https://www.cake.me/companies/shopline/jobs/tpd0303product-manager"
   },
   {
-    rank: 9, tier: "track",
+    rank: 9, tier: "track", health: "closed",
     title: "Assistant Project Manager",
     company: "Manuscript",
     type: "APM / PJM",
@@ -1011,7 +1020,7 @@ const JOBS_DATA = [
     url: "https://www.cake.me/companies/manuscript/jobs/assistant-project-manager-594"
   },
   {
-    rank: 10, tier: "track",
+    rank: 10, tier: "track", health: "open",
     title: "Amazon Project Manager（電商代操）",
     company: "HourLoop",
     type: "PJM",
@@ -1023,7 +1032,7 @@ const JOBS_DATA = [
     url: "https://www.cake.me/companies/hour-loop/jobs/amazon-amazon-project-manager"
   },
   {
-    rank: 11, tier: "track",
+    rank: 11, tier: "track", health: "closed",
     title: "Product Manager",
     company: "Portaly",
     type: "PDM",
@@ -1035,7 +1044,7 @@ const JOBS_DATA = [
     url: "https://www.cake.me/companies/portaly/jobs/portaly-product-manager-product-manager-2026"
   },
   {
-    rank: 12, tier: "track",
+    rank: 12, tier: "track", health: "closed",
     title: "Product Planning Manager",
     company: "動見 OmniEyes",
     type: "PDM",
@@ -1047,7 +1056,7 @@ const JOBS_DATA = [
     url: "https://www.cake.me/companies/omnieyes/jobs/product-planning-manager"
   },
   {
-    rank: 13, tier: "track",
+    rank: 13, tier: "track", health: "closed",
     title: "QA Project Manager",
     company: "GliaCloud",
     type: "PJM + QA",
@@ -1059,7 +1068,7 @@ const JOBS_DATA = [
     url: "https://www.cake.me/companies/gliacloud/jobs/qa-project-manager"
   },
   {
-    rank: 14, tier: "later",
+    rank: 14, tier: "later", health: "closed",
     title: "Product Manager",
     company: "Capital Layer",
     type: "PDM",
@@ -1071,7 +1080,7 @@ const JOBS_DATA = [
     url: "https://www.cake.me/companies/capitallayer/jobs/product-manager-capital-layer"
   },
   {
-    rank: 15, tier: "later",
+    rank: 15, tier: "later", health: "closed",
     title: "BD / PM（法律科技）",
     company: "Lawsnote",
     type: "BD + PM",
@@ -1083,7 +1092,7 @@ const JOBS_DATA = [
     url: "https://www.cake.me/companies/lawsnote/jobs/lawsnote.bd"
   },
   {
-    rank: 16, tier: "later",
+    rank: 16, tier: "later", health: "open",
     title: "Project Manager（政府標案）",
     company: "SYSTEX 精誠資訊",
     type: "PJM",
@@ -1095,7 +1104,7 @@ const JOBS_DATA = [
     url: "https://www.cake.me/companies/systex/jobs/pjm-project-manager-government-projects-v30h"
   },
   {
-    rank: 17, tier: "later",
+    rank: 17, tier: "later", health: "open",
     title: "Business Analyst",
     company: "雲策數據",
     type: "BA",
@@ -1107,7 +1116,7 @@ const JOBS_DATA = [
     url: "https://www.cake.me/companies/104-company-1a2x6blq4a/jobs/business-analyst1"
   },
   {
-    rank: 18, tier: "later",
+    rank: 18, tier: "later", health: "open",
     title: "Brand Product Manager（GTM）",
     company: "WitsPer 智選家",
     type: "PDM + 行銷",
@@ -1119,7 +1128,7 @@ const JOBS_DATA = [
     url: "https://www.cake.me/companies/witsper/jobs/bm-brand-product-manager-gtm-strategy"
   },
   {
-    rank: 19, tier: "later",
+    rank: 19, tier: "later", health: "closed",
     title: "PM（新媒體 / 廣告行銷）",
     company: "簡訊設計",
     type: "PDM",
@@ -1131,7 +1140,7 @@ const JOBS_DATA = [
     url: "https://www.cake.me/companies/simpleinfo/jobs/zhiqi-qiqi-project-manager-pm"
   },
   {
-    rank: 20, tier: "later",
+    rank: 20, tier: "later", health: "open",
     title: "Project Manager（健康領域）",
     company: "原氣",
     type: "PJM",
@@ -1143,7 +1152,7 @@ const JOBS_DATA = [
     url: "https://www.cake.me/companies/drbreaths/jobs/project-manage"
   },
   {
-    rank: 21, tier: "later",
+    rank: 21, tier: "later", health: "closed",
     title: "新業務品牌產品開發 PM",
     company: "美科實業",
     type: "PDM",
@@ -1155,7 +1164,7 @@ const JOBS_DATA = [
     url: "https://www.cake.me/companies/macrohi/jobs/new-business-unit-brand-product-development-pm"
   },
   {
-    rank: 22, tier: "later",
+    rank: 22, tier: "later", health: "closed",
     title: "Product Manager",
     company: "Nitra",
     type: "PDM",
@@ -1167,7 +1176,7 @@ const JOBS_DATA = [
     url: "https://www.cake.me/companies/nitra/jobs/product-manager-taipei-371"
   },
   {
-    rank: 23, tier: "later",
+    rank: 23, tier: "later", health: "unknown",
     title: "PM（台中）",
     company: "庠菻",
     type: "PJM",
@@ -1342,15 +1351,39 @@ let currentTier = 'top';
 
 const PDM_LABEL = { high: '高', mid: '中', low: '低' };
 
+// "open" needs no badge — it is the default state and would just add noise to 12 cards.
+const HEALTH_BADGE = {
+  closed:  '<span class="health-badge closed" title="2026-07-27 核對時連結回 404">已下架</span>',
+  unknown: '<span class="health-badge unknown" title="104 擋自動抓取（403），無法確認開缺狀態，需人工點開">狀態未確認</span>'
+};
+
 // Job listings have a shelf life of roughly 4–8 weeks. Say so out loud.
 function renderJobsChecked() {
   const el = document.getElementById('jobs-checked');
   const checked = new Date(JOBS_META.checkedAt + 'T00:00:00');
   const weeks = Math.floor((Date.now() - checked.getTime()) / (7 * 24 * 3600 * 1000));
-  const stale = weeks >= 4;
+  const closed = JOBS_DATA.filter(j => j.health === 'closed').length;
+  const unknown = JOBS_DATA.filter(j => j.health === 'unknown').length;
+  // Stale by age, or by rot: a list that is a third dead needs recompiling regardless of date.
+  const stale = weeks >= 4 || closed / JOBS_DATA.length >= 0.3;
   el.className = 'jobs-checked' + (stale ? ' stale' : '');
   el.textContent = `清單最後核對：${JOBS_META.checkedAt}（距今約 ${weeks} 週）`
-    + (stale ? ' — 職缺保鮮期約 4–8 週，建議重新核對連結與開缺狀態。' : '');
+    + ` — ${JOBS_DATA.length} 個職缺中 ${closed} 個已下架`
+    + (unknown ? `、${unknown} 個無法自動確認` : '')
+    + `，剩 ${JOBS_DATA.length - closed - unknown} 個仍可投。`
+    + (stale ? ' 建議重新盤一輪清單。' : '');
+}
+
+// Counts used to be hardcoded in the HTML ("主推 5 個" / "全部 23 個") and went wrong the
+// moment a listing died. Derive them, and show live/total so the rot is visible on the button.
+function renderTierCounts() {
+  const label = { top: '主推', track: '持續觀察', later: '暫緩 / 參考', all: '全部' };
+  ['top', 'track', 'later', 'all'].forEach(tier => {
+    const set = tier === 'all' ? JOBS_DATA : JOBS_DATA.filter(j => j.tier === tier);
+    const live = set.filter(j => j.health !== 'closed').length;
+    document.getElementById('btn-' + tier).textContent =
+      `${label[tier]} ${live}${live < set.length ? ` / ${set.length}` : ` 個`}`;
+  });
 }
 
 function filterJobs(tier) {
@@ -1362,15 +1395,19 @@ function filterJobs(tier) {
 
 function renderJobs() {
   const grid = document.getElementById('jobs-grid');
-  const filtered = currentTier === 'all' ? JOBS_DATA : JOBS_DATA.filter(j => j.tier === currentTier);
+  const filtered = (currentTier === 'all' ? JOBS_DATA : JOBS_DATA.filter(j => j.tier === currentTier))
+    // Dead listings stay visible (they are evidence of how fast this list rots) but sink
+    // below the ones you can still apply to.
+    .slice().sort((a, b) => (a.health === 'closed') - (b.health === 'closed'));
   const tierColor = { top: 'var(--accent)', track: 'var(--accent4)', later: 'var(--muted)' };
   const tierLabel = { top: '主推', track: '觀察中', later: '暫緩' };
   grid.innerHTML = filtered.map(j => `
-    <div class="job-card">
+    <div class="job-card${j.health === 'closed' ? ' job-closed' : ''}">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
         <div class="job-rank">${j.rank}</div>
         <div style="display:flex;align-items:center;gap:8px">
           <span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:4px;background:${tierColor[j.tier]}18;color:${tierColor[j.tier]};border:1px solid ${tierColor[j.tier]}30">${tierLabel[j.tier]}</span>
+          ${HEALTH_BADGE[j.health] || ''}
           ${j.pdmExposure ? `<span class="pdm-badge ${j.pdmExposure}" title="能否在職內累積 discovery / PRD / 指標所有權">PDM 曝光 ${PDM_LABEL[j.pdmExposure]}</span>` : ''}
           <span class="match-score">${j.match}%</span>
         </div>
@@ -1382,7 +1419,9 @@ function renderJobs() {
         ${j.tags.map(t => `<span class="job-tag">${t}</span>`).join('')}
       </div>
       <p style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:14px">${j.why}</p>
-      <a class="job-link" href="${j.url}" target="_blank">查看職缺 →</a>
+      <a class="job-link" href="${j.url}" target="_blank">${
+        j.health === 'closed' ? '原始連結（已失效）→' : '查看職缺 →'
+      }</a>
     </div>
   `).join('');
 }
@@ -1673,6 +1712,7 @@ renderSkills();
 renderCompletionNote();
 renderWontList();
 renderJobsChecked();
+renderTierCounts();
 renderJobs();
 </script>
 </body>

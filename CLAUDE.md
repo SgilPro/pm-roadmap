@@ -24,8 +24,8 @@
 | `PIPELINE_DATA` | 首頁主指標：投遞→面試→offer。**唯一的結果指標** | — |
 | `ROADMAP_DATA` | 12 個 phase 的能力地圖，92 項 | `have` / `learning` / `need` / `wont` |
 | `SKILLS_DATA` | 扁平技能表，39 項 | `have` / `partial` / `need` / `wont` |
-| `JOBS_DATA` | 23 個職缺 | — |
-| `JOBS_META` | `checkedAt` — 職缺清單最後核對日 | — |
+| `JOBS_DATA` | 23 個職缺，每筆帶 `health` | `open` / `closed` / `unknown` |
+| `JOBS_META` | `checkedAt` — 職缺清單最後核對日；`checkMethod` — 怎麼核的 | — |
 | `SKILL_HISTORY` | 版本快照，每筆帶完整 `SKILLS_DATA` 副本 | — |
 
 ## ⚠️ 兩份技能資料，餵不同的畫面
@@ -46,4 +46,6 @@
 - **`wont` 一律排除在所有分數之外**：`calcCompletion()`、`buildCatGroups()`、`renderSkillTree()` 的分母都已過濾。新增計算時記得比照。
 - **`Five Forces` 在兩份資料裡叫不同名字**（`Five Forces Analysis` / `Porter's Five Forces`），靠 `WONT_ALIASES` 在不學清單中合併成一筆。
 - **不要編造資料**。技能狀態、不學的理由、職缺資訊都是使用者的個人判斷，無法確認時填 `{{TBD}}`。`JOBS_META.checkedAt` 必須是真的核對過的日期。
+- **職缺 health 只能靠實抓**。核對方式是逐一 fetch `url` 看 HTTP 狀態：200 → `open`，404 → `closed`。**擋爬蟲的 403 是 `unknown`，不是 `closed`**（104.com.tw 就是這種）。抓不到就標 `unknown` 並留給人工點開，不要猜。核完才准動 `checkedAt`。
+- **職缺下架不刪除**，同 `wont` 的邏輯：標 `health: "closed"`，`renderJobs()` 會灰階、劃線、沉到該 tier 最底。清單爛掉的速度本身就是資訊——2026-07-27 那次核對，23 個裡有 10 個在四週內下架。
 - **淨方向是減少**。這個站的失敗模式是堆一份永遠學不完的清單來說服自己還不能投遞。新增項目前先想能砍什麼。
