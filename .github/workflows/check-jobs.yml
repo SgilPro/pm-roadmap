@@ -1,0 +1,42 @@
+# 這是 CI，不是網站的 build step——index.html 仍然是打開就能跑的靜態檔。
+#
+# 只查 HTTP 狀態碼，不解析職缺內容。新職缺的「發現」維持人工（見 docs/job-triage.md），
+# 因為 match% / why / tier 都是使用者的個人判斷，自動生成就是編造資料。
+#
+# 腳本被擋或改壞 index.html 時會 exit 1，讓這個 run 失敗並寄信通知——
+# 沉默地寫入錯誤資料比沒有機制更糟。
+name: 職缺連結核對
+
+on:
+  schedule:
+    # 每週一 01:00 UTC = 台北時間 09:00
+    - cron: '0 1 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # runner 內建 Node 20，原生 fetch 可用，不需要 setup-node 或任何套件。
+      - name: 核對每個職缺連結
+        run: node scripts/check-jobs.mjs
+
+      - name: 有變更才 commit
+        run: |
+          if git diff --quiet -- index.html; then
+            echo "職缺狀態無變化，不 commit。"
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "chore: 每週職缺連結核對
+
+          由 .github/workflows/check-jobs.yml 自動產生。
+          只更新 health / closedAt / checkedAt / retiredTotal，不改任何判斷欄位。"
+          git push

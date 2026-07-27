@@ -318,6 +318,9 @@
   /* Job freshness + PDM exposure */
   .jobs-checked { font-size: 12px; color: var(--muted); margin-bottom: 16px; }
   .jobs-checked.stale { color: var(--accent4); font-weight: 600; }
+  .apply-gap { font-size: 13px; font-weight: 600; color: var(--accent5); margin: -8px 0 16px;
+               padding: 10px 14px; border-left: 3px solid var(--accent5);
+               background: rgba(220,38,38,0.05); border-radius: 0 6px 6px 0; }
   .pdm-badge { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 4px; }
   .pdm-badge.high { background: rgba(5,150,105,0.12); color: #059669; }
   .pdm-badge.mid { background: rgba(217,119,6,0.12); color: var(--accent4); }
@@ -537,6 +540,7 @@
   <div class="section-title">第一波推薦職缺</div>
   <div class="section-sub">依背景匹配度排序，主推那批作為試水溫投遞</div>
   <div class="jobs-checked" id="jobs-checked"></div>
+  <div class="apply-gap" id="apply-gap"></div>
 
   <!-- Readiness Assessment -->
   <div class="readiness-panel">
@@ -651,11 +655,16 @@ const PIPELINE_DATA = {
   updatedAt: "2026-07-27"
 };
 
-// 2026-07-27: all 23 URLs were actually fetched (two passes, agreeing).
-// health: "open" = HTTP 200 | "closed" = HTTP 404 | "unknown" = could not verify
-// The 104.com.tw link blocks automated requests (403) — that is NOT evidence it is closed.
-// Re-run the sweep by hand before trusting this date again.
-const JOBS_META = { checkedAt: "2026-07-27", checkMethod: "逐一抓取職缺頁，依 HTTP 狀態碼判定" };
+// Maintained by scripts/check-jobs.mjs (weekly, via .github/workflows/check-jobs.yml).
+// health: "open" = HTTP 200 | "closed" = HTTP 404/410 | "unknown" = could not verify
+// A blocked request (403 etc.) is NOT evidence a job is closed — see the script.
+// closedAt on a job is the removal timer: it is retired on the next run 7+ days later.
+const JOBS_META = {
+  checkedAt: "2026-07-27",
+  checkMethod: "HEAD 每個職缺頁，依 HTTP 狀態碼判定",
+  trackingSince: "2026-06-30",  // 統計窗口起點：職缺清單建立日
+  retiredTotal: 0                // 累計因下架而從清單移除的筆數
+};
 
 // status: "have" | "learning" | "need" | "wont"
 // "wont" = 刻意不學（scope cut）。保留可見，不刪除；每項須有 reason。
@@ -933,7 +942,7 @@ const JOBS_DATA = [
     url: "https://www.cake.me/companies/akohub/jobs/project-manager-shopify-store-system-integration"
   },
   {
-    rank: 3, tier: "top", health: "closed",
+    rank: 3, tier: "top", health: "closed", closedAt: "2026-07-27",
     title: "Project Manager 專案經理",
     company: "25sprout 新芽網路",
     pdmExposure: "mid",
@@ -1008,7 +1017,7 @@ const JOBS_DATA = [
     url: "https://www.cake.me/companies/shopline/jobs/tpd0303product-manager"
   },
   {
-    rank: 9, tier: "track", health: "closed",
+    rank: 9, tier: "track", health: "closed", closedAt: "2026-07-27",
     title: "Assistant Project Manager",
     company: "Manuscript",
     type: "APM / PJM",
@@ -1032,7 +1041,7 @@ const JOBS_DATA = [
     url: "https://www.cake.me/companies/hour-loop/jobs/amazon-amazon-project-manager"
   },
   {
-    rank: 11, tier: "track", health: "closed",
+    rank: 11, tier: "track", health: "closed", closedAt: "2026-07-27",
     title: "Product Manager",
     company: "Portaly",
     type: "PDM",
@@ -1044,7 +1053,7 @@ const JOBS_DATA = [
     url: "https://www.cake.me/companies/portaly/jobs/portaly-product-manager-product-manager-2026"
   },
   {
-    rank: 12, tier: "track", health: "closed",
+    rank: 12, tier: "track", health: "closed", closedAt: "2026-07-27",
     title: "Product Planning Manager",
     company: "動見 OmniEyes",
     type: "PDM",
@@ -1056,7 +1065,7 @@ const JOBS_DATA = [
     url: "https://www.cake.me/companies/omnieyes/jobs/product-planning-manager"
   },
   {
-    rank: 13, tier: "track", health: "closed",
+    rank: 13, tier: "track", health: "closed", closedAt: "2026-07-27",
     title: "QA Project Manager",
     company: "GliaCloud",
     type: "PJM + QA",
@@ -1068,7 +1077,7 @@ const JOBS_DATA = [
     url: "https://www.cake.me/companies/gliacloud/jobs/qa-project-manager"
   },
   {
-    rank: 14, tier: "later", health: "closed",
+    rank: 14, tier: "later", health: "closed", closedAt: "2026-07-27",
     title: "Product Manager",
     company: "Capital Layer",
     type: "PDM",
@@ -1080,7 +1089,7 @@ const JOBS_DATA = [
     url: "https://www.cake.me/companies/capitallayer/jobs/product-manager-capital-layer"
   },
   {
-    rank: 15, tier: "later", health: "closed",
+    rank: 15, tier: "later", health: "closed", closedAt: "2026-07-27",
     title: "BD / PM（法律科技）",
     company: "Lawsnote",
     type: "BD + PM",
@@ -1128,7 +1137,7 @@ const JOBS_DATA = [
     url: "https://www.cake.me/companies/witsper/jobs/bm-brand-product-manager-gtm-strategy"
   },
   {
-    rank: 19, tier: "later", health: "closed",
+    rank: 19, tier: "later", health: "closed", closedAt: "2026-07-27",
     title: "PM（新媒體 / 廣告行銷）",
     company: "簡訊設計",
     type: "PDM",
@@ -1152,7 +1161,7 @@ const JOBS_DATA = [
     url: "https://www.cake.me/companies/drbreaths/jobs/project-manage"
   },
   {
-    rank: 21, tier: "later", health: "closed",
+    rank: 21, tier: "later", health: "closed", closedAt: "2026-07-27",
     title: "新業務品牌產品開發 PM",
     company: "美科實業",
     type: "PDM",
@@ -1164,7 +1173,7 @@ const JOBS_DATA = [
     url: "https://www.cake.me/companies/macrohi/jobs/new-business-unit-brand-product-development-pm"
   },
   {
-    rank: 22, tier: "later", health: "closed",
+    rank: 22, tier: "later", health: "closed", closedAt: "2026-07-27",
     title: "Product Manager",
     company: "Nitra",
     type: "PDM",
@@ -1367,11 +1376,25 @@ function renderJobsChecked() {
   // Stale by age, or by rot: a list that is a third dead needs recompiling regardless of date.
   const stale = weeks >= 4 || closed / JOBS_DATA.length >= 0.3;
   el.className = 'jobs-checked' + (stale ? ' stale' : '');
-  el.textContent = `清單最後核對：${JOBS_META.checkedAt}（距今約 ${weeks} 週）`
+  el.textContent = `清單最後核對：${JOBS_META.checkedAt}（距今約 ${weeks} 週，每週自動核對）`
     + ` — ${JOBS_DATA.length} 個職缺中 ${closed} 個已下架`
     + (unknown ? `、${unknown} 個無法自動確認` : '')
     + `，剩 ${JOBS_DATA.length - closed - unknown} 個仍可投。`
+    + (JOBS_META.retiredTotal ? ` 自 ${JOBS_META.trackingSince} 起累計 ${JOBS_META.retiredTotal} 個職缺下架退場。` : '')
     + (stale ? ' 建議重新盤一輪清單。' : '');
+}
+
+// 這份清單的用途是被投遞，不是被維護。把兩個既有數字擺在一起就足以說明——
+// 不新增任何 per-job 追蹤欄位，PIPELINE_DATA 仍是唯一的結果指標。
+function renderApplyGap() {
+  const el = document.getElementById('apply-gap');
+  const openTop = JOBS_DATA.filter(j => j.tier === 'top' && j.health !== 'closed').length;
+  const applied = PIPELINE_DATA.applied;
+  if (applied >= openTop) { el.style.display = 'none'; return; }
+  el.style.display = '';
+  el.textContent = applied === 0
+    ? `主推 ${openTop} 個仍開放，已投遞 0。清單維護得再好也不會變成面試邀約——投遞才會。`
+    : `主推 ${openTop} 個仍開放，已投遞 ${applied}。還有 ${openTop - applied} 個沒動。`;
 }
 
 // Counts used to be hardcoded in the HTML ("主推 5 個" / "全部 23 個") and went wrong the
@@ -1712,6 +1735,7 @@ renderSkills();
 renderCompletionNote();
 renderWontList();
 renderJobsChecked();
+renderApplyGap();
 renderTierCounts();
 renderJobs();
 </script>

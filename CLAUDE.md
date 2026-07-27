@@ -12,10 +12,15 @@
 |---|---|
 | `index.html` | 整站。HTML + CSS + JS + 資料全部在這一個檔案裡 |
 | `portfolio/linkju.html`、`portfolio/voipark.html` | 兩份 PM case study |
+| `scripts/check-jobs.mjs` | 職缺連結核對器（無相依套件，Node 18+） |
+| `.github/workflows/check-jobs.yml` | 每週一跑上面那支，有變更就自動 commit |
 | `docs/mentor-handoff.md` | 改版任務單與診斷（活文件） |
 | `docs/user-interviews/` | 訪談指南模板與紀錄 |
+| `docs/job-triage.md` | 雙週 15 分鐘的人工職缺 triage 流程 |
 
 驗證方式：`open index.html`。沒有測試，改完請開瀏覽器逐分頁看過並確認 console 無錯誤。
+
+CI 存在**不代表網站有 build step**——`index.html` 仍然是打開就能跑。workflow 只改資料欄位，不產生網站。
 
 ## 資料常數（都在 `index.html` 的 `<script>` 內）
 
@@ -46,6 +51,25 @@
 - **`wont` 一律排除在所有分數之外**：`calcCompletion()`、`buildCatGroups()`、`renderSkillTree()` 的分母都已過濾。新增計算時記得比照。
 - **`Five Forces` 在兩份資料裡叫不同名字**（`Five Forces Analysis` / `Porter's Five Forces`），靠 `WONT_ALIASES` 在不學清單中合併成一筆。
 - **不要編造資料**。技能狀態、不學的理由、職缺資訊都是使用者的個人判斷，無法確認時填 `{{TBD}}`。`JOBS_META.checkedAt` 必須是真的核對過的日期。
-- **職缺 health 只能靠實抓**。核對方式是逐一 fetch `url` 看 HTTP 狀態：200 → `open`，404 → `closed`。**擋爬蟲的 403 是 `unknown`，不是 `closed`**（104.com.tw 就是這種）。抓不到就標 `unknown` 並留給人工點開，不要猜。核完才准動 `checkedAt`。
-- **職缺下架不刪除**，同 `wont` 的邏輯：標 `health: "closed"`，`renderJobs()` 會灰階、劃線、沉到該 tier 最底。清單爛掉的速度本身就是資訊——2026-07-27 那次核對，23 個裡有 10 個在四週內下架。
 - **淨方向是減少**。這個站的失敗模式是堆一份永遠學不完的清單來說服自己還不能投遞。新增項目前先想能砍什麼。
+
+## 職缺清單的更新機制
+
+2026-07-27 實抓證實：清單建立四週後，**23 個裡有 10 個已下架（43%）**。所以核對必須自動化。
+
+**「自動核對」不等於「自動抓職缺」。** handoff §5 禁止的是後者，這條線不要越過：
+
+| | 誰做 | 為什麼 |
+|---|---|---|
+| **衰減**（連結死掉） | `scripts/check-jobs.mjs`，每週一自動 | 純機械，HTTP 狀態碼就是答案，零判斷 |
+| **發現**（新職缺） | 人工，見 `docs/job-triage.md` | `match` / `why` / `tier` / `pdmExposure` 全是使用者的個人判斷，自動生成就是編造資料 |
+
+腳本**只查 HTTP 狀態碼，不解析職缺頁內容**。
+
+- **`health` 判定**：200 → `open`；404 / 410 → `closed`；**其他一律不是 `closed`**。403 / 429 / 5xx / timeout 代表「我們被擋了」而不是「職缺沒了」，一律保留原值。
+- **104.com.tw 永遠無法自動核對**。整站在 Cloudflare managed challenge 後面，連 `robots.txt` 都要跑 JS 才拿得到。腳本直接跳過不發請求，強制 `unknown`，交給人工點開。（cake.me 的 `robots.txt` 則完全開放，自報身分的 UA 就能通，不需要偽裝瀏覽器。）
+- **兩道護欄，都會 `exit 1` 讓 CI 失敗**：未驗證比例 > 40% 視為檢查器被擋，一個字都不寫；寫入後 `<script>` 過不了 `node --check` 就還原檔案。沉默地寫入錯誤資料比沒有機制更糟。
+- **`closedAt` 是移除的計時器**。死掉當下蓋日期，滿 7 天後由下一次核對從 `JOBS_DATA` 移除、`rank` 重編、`JOBS_META.retiredTotal` 遞增。**清單不留屍體，但保留「爛得多快」這個統計。**
+- **`JOBS_META.checkedAt` 只能由真的核對過的流程更新**（腳本會自己更新，手動改請先實跑）。
+- **`renderApplyGap()` 是刻意的刺**：主推開放數 vs `PIPELINE_DATA.applied`。維護清單很像在前進，但它不會讓投遞數字動。不要為了讓那行紅字消失而去改資料。
+- ⚠️ **GitHub 會在 repo 連續 60 天無活動後停掉排程 workflow**，要用 email 重新啟用。
