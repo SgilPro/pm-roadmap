@@ -120,6 +120,13 @@
     border-color: rgba(217,119,6,0.25);
     color: var(--accent4);
   }
+  .skill-tag.wont {
+    background: #f1f5f9;
+    border-color: var(--border);
+    color: #94a3b8;
+    text-decoration: line-through;
+    opacity: 0.75;
+  }
 
   .legend {
     display: flex;
@@ -163,6 +170,9 @@
   .badge.have { background: rgba(124,58,237,0.1); color: var(--you); }
   .badge.need { background: #f1f5f9; color: var(--muted); border: 1px solid var(--border); }
   .badge.partial { background: rgba(217,119,6,0.1); color: var(--accent4); }
+  .badge.wont { background: #f1f5f9; color: #94a3b8; border: 1px solid var(--border); }
+  tr.row-wont { opacity: 0.55; }
+  tr.row-wont td:nth-child(2) { text-decoration: line-through; }
   .priority-bar { width: 60px; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
   .priority-fill { height: 100%; border-radius: 3px; }
 
@@ -271,6 +281,48 @@
   .progress-stat .num { font-size: 26px; font-weight: 800; }
   .progress-stat .label { font-size: 11px; color: var(--muted); margin-top: 2px; }
 
+  /* Pipeline — the North Star. Deliberately the largest numbers on the page. */
+  .pipeline-panel { margin-bottom: 24px; }
+  .pipeline-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 10px;
+  }
+  .pipeline-stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 16px;
+    text-align: center;
+  }
+  .pipeline-stat.offer { border-color: rgba(5,150,105,0.35); background: rgba(5,150,105,0.04); }
+  .pipeline-stat .num { font-size: 46px; font-weight: 800; line-height: 1.05; color: var(--accent3); }
+  .pipeline-stat.offer .num { color: #059669; }
+  .pipeline-stat.zero .num { color: #cbd5e1; }
+  .pipeline-stat .label { font-size: 12px; color: var(--muted); margin-top: 6px; font-weight: 600; }
+  .pipeline-foot { font-size: 11px; color: var(--muted); margin-top: 10px; }
+
+  /* Deliberately-not-learning panel */
+  .wont-panel { margin-top: 28px; }
+  /* One row per item. Do NOT reuse .tree-skills here — it is a multi-column grid. */
+  .wont-list { padding: 4px 0 6px; }
+  .wont-item { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px;
+               padding: 10px 16px; border-top: 1px solid var(--border); font-size: 12px; }
+  .wont-item:first-child { border-top: none; }
+  .wont-name { flex: 0 0 180px; min-width: 0; font-weight: 600; color: #64748b; text-decoration: line-through; }
+  .wont-reason { flex: 1 1 320px; min-width: 0; color: var(--muted); line-height: 1.6; }
+  .wont-detail { margin-top: 6px; color: #94a3b8; line-height: 1.7; font-size: 11.5px; }
+  .wont-detail summary { cursor: pointer; color: var(--accent3); font-size: 11px; }
+  .wont-src { flex: 0 0 auto; margin-left: auto; font-size: 10px; color: #cbd5e1; white-space: nowrap; }
+
+  /* Job freshness + PDM exposure */
+  .jobs-checked { font-size: 12px; color: var(--muted); margin-bottom: 16px; }
+  .jobs-checked.stale { color: var(--accent4); font-weight: 600; }
+  .pdm-badge { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 4px; }
+  .pdm-badge.high { background: rgba(5,150,105,0.12); color: #059669; }
+  .pdm-badge.mid { background: rgba(217,119,6,0.12); color: var(--accent4); }
+  .pdm-badge.low { background: #f1f5f9; color: var(--muted); }
+
   /* Portfolio */
   .tier-btn {
     padding: 6px 14px;
@@ -342,6 +394,8 @@
   .tree-skill-icon.have { color:#059669; }
   .tree-skill-icon.partial { color:#d97706; }
   .tree-skill-icon.need { color:#94a3b8; }
+  .tree-skill-icon.wont { color:#cbd5e1; }
+  .tree-skill.wont .tree-skill-name { text-decoration: line-through; color:#94a3b8; }
   .tree-skill-name { font-size:13px; flex:1; }
   .tree-skill-prio { font-size:10px; color:var(--muted); background:var(--bg); border:1px solid var(--border); border-radius:3px; padding:1px 5px; }
   .social-badge { font-size:10px; font-weight:600; padding:1px 5px; border-radius:3px; white-space:nowrap; }
@@ -367,7 +421,15 @@
 
 <!-- ========== ROADMAP TAB ========== -->
 <div class="view active" id="view-roadmap">
-  <div class="section-title">PM 能力 Roadmap</div>
+  <!-- North Star: outcome metrics. Everything else on this page is an input metric. -->
+  <div class="pipeline-panel">
+    <div class="section-title">求職 Pipeline</div>
+    <div class="section-sub">唯一的結果指標。技能完成度是 input metric，不是目標。</div>
+    <div class="pipeline-grid" id="pipeline-grid"></div>
+    <div class="pipeline-foot" id="pipeline-foot"></div>
+  </div>
+
+  <div class="section-title" style="margin-top:32px">PM 能力 Roadmap</div>
   <div class="section-sub">基於 roadmap.sh + Product Compass 8 大能力框架，標記你目前的能力位置</div>
 
   <div class="legend">
@@ -383,24 +445,9 @@
       <div class="legend-dot" style="background:#e2e8f0"></div>
       待學習
     </div>
-  </div>
-
-  <div class="progress-overview">
-    <div class="progress-stat">
-      <div class="num" style="color:var(--you)">14</div>
-      <div class="label">已具備技能</div>
-    </div>
-    <div class="progress-stat">
-      <div class="num" style="color:var(--accent4)">8</div>
-      <div class="label">學習中（Phase 1）</div>
-    </div>
-    <div class="progress-stat">
-      <div class="num" style="color:var(--muted)">32</div>
-      <div class="label">待學習</div>
-    </div>
-    <div class="progress-stat">
-      <div class="num" style="color:var(--accent3)">26%</div>
-      <div class="label">整體完成度</div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background:#cbd5e1"></div>
+      刻意不學
     </div>
   </div>
 
@@ -412,16 +459,17 @@
   <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px">
     <div>
       <div class="section-title">技能圖譜</div>
-      <div class="section-sub">基於 Product Compass 32 題評估框架，對應你的背景</div>
+      <div class="section-sub">基於 Product Compass 評估框架，對應你的背景</div>
       <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap">
         <span class="social-badge high">✓ 可轉移</span><span style="font-size:12px;color:var(--muted)">社創/LFT 背景直接可轉移，翻譯 PM 語言即可</span>
         <span class="social-badge mid">△ 部分</span><span style="font-size:12px;color:var(--muted)">相關經驗，需補 PM 框架</span>
       </div>
+      <div id="completion-note" style="font-size:11px;color:var(--muted)"></div>
     </div>
     <div class="snapshot-bar">
       <span style="font-size:12px;color:var(--muted)">歷史版本：</span>
       <select id="snapshot-select" onchange="onSnapshotChange()">
-        <option value="current">2026-07-23（目前）</option>
+        <option value="current">2026-07-27（目前）</option>
       </select>
     </div>
   </div>
@@ -452,7 +500,7 @@
   <div class="sub-view" id="sub-radar">
     <div class="radar-layout" style="margin-top:20px">
       <div class="radar-card">
-        <div class="radar-card-title">八大分類總覽</div>
+        <div class="radar-card-title">能力分類總覽</div>
         <div class="radar-card-hint">點擊分類名稱或資料點查看細項</div>
         <canvas id="chart-main" style="max-width:440px;max-height:440px"></canvas>
         <div class="radar-legend">
@@ -472,12 +520,16 @@
   <div class="sub-view" id="sub-tree">
     <div id="skill-tree" style="margin-top:8px"></div>
   </div>
+
+  <!-- Scope cut, made visible on purpose -->
+  <div class="wont-panel" id="wont-panel"></div>
 </div>
 
 <!-- ========== JOBS TAB ========== -->
 <div class="view" id="view-jobs">
   <div class="section-title">第一波推薦職缺</div>
   <div class="section-sub">依背景匹配度排序，5 個作為試水溫投遞</div>
+  <div class="jobs-checked" id="jobs-checked"></div>
 
   <!-- Readiness Assessment -->
   <div class="readiness-panel">
@@ -529,7 +581,8 @@
     </div>
     <div class="readiness-verdict verdict-not-ready">
       <strong>目前尚未達到投遞門檻。</strong> 建議完成順序：<br>
-      1. <strong>履歷重寫</strong>（1–2 週）→ 2. <strong>Mock Interview 練習 2–3 輪</strong>（Claude 主持）→ 3. 投遞 <strong>Akohub</strong>（門檻最低，最快拿 title）+ <strong>MaiAgent</strong>（背景命中率最高）<br>
+      1. <strong>履歷重寫</strong>（一個週末）→ 2. <strong>Mock Interview 練習 2–3 輪</strong>（Claude 主持）→ 3. 投遞 <strong>Akohub</strong>（門檻最低，最快拿 title）+ <strong>MaiAgent</strong>（背景命中率最高）<br>
+      <span style="display:inline-block;margin-top:8px;font-weight:400">履歷為什麼是一個週末而不是 1–2 週：原料已足（2 份 case study、Linkju PRD 與決策記錄、SM 3 個月），缺的只是翻譯，不是產出。排成兩週會讓它變成六週。</span><br>
       GA4 和 SQL 可邊工作邊補，不阻擋 PJM 類投遞；PDM（addcn）需要 GA4 後再投。
     </div>
   </div>
@@ -580,6 +633,23 @@
 <script>
 // ===== DATA =====
 
+// ===== NORTH STAR =====
+// The only outcome metric on this site. Update by hand as the search progresses.
+const PIPELINE_DATA = {
+  applied: 0,
+  screening: 0,
+  interview: 0,
+  final: 0,
+  offer: 0,
+  updatedAt: "2026-07-27"
+};
+
+// Job listings go stale in 4–8 weeks. This is when the list was last compiled by hand
+// (commit 5b1ff40) — NOT a date the 23 links were re-verified.
+const JOBS_META = { checkedAt: "2026-06-30" };
+
+// status: "have" | "learning" | "need" | "wont"
+// "wont" = 刻意不學（scope cut）。保留可見，不刪除；每項須有 reason。
 const ROADMAP_DATA = [
   {
     title: "Introduction", icon: "📌", color: "#6366f1",
@@ -598,10 +668,10 @@ const ROADMAP_DATA = [
       { name: "發想工具", skills: [
         { name: "Mind Mapping", status: "have" },
         { name: "Brainstorming", status: "have" },
-        { name: "SCAMPER", status: "need" },
+        { name: "SCAMPER", status: "wont", reason: "需要時現查即可，不需預先學。" },
         { name: "Problem Framing", status: "learning" },
-        { name: "Blue Ocean Strategy", status: "need" },
-        { name: "TRIZ", status: "need" },
+        { name: "Blue Ocean Strategy", status: "wont", reason: "層級太高，現在用不到。" },
+        { name: "TRIZ", status: "wont", reason: "算是選修不是必修，優先度低。" },
       ]}
     ]
   },
@@ -618,7 +688,7 @@ const ROADMAP_DATA = [
         { name: "User Personas", status: "learning" },
         { name: "User Interviews", status: "need" },
         { name: "Surveys & Questionnaires", status: "need" },
-        { name: "Ethnographic Research", status: "need" },
+        { name: "Ethnographic Research", status: "wont", reason: "成本太高，先做 User Interview。" },
         { name: "Jobs to Be Done (JTBD)", status: "learning" },
         { name: "Usability Testing", status: "need" },
       ]}
@@ -634,8 +704,10 @@ const ROADMAP_DATA = [
         { name: "Business Model Canvas", status: "need" },
       ]},
       { name: "策略", skills: [
-        { name: "Five Forces Analysis", status: "need" },
-        { name: "SWOT / PESTLE", status: "need" },
+        { name: "Five Forces Analysis", status: "wont", reason: "概念理解即可，不需深入。" },
+        { name: "SWOT / PESTLE", status: "wont",
+          reason: "輸入品質遠比工具本身重要；低頻工具，不值得反覆操練。",
+          reasonDetail: "輸入品質遠比工具本身重要。你真正需要的是：對政策、總體經濟、社會文化、技術、法規有基本敏感度，知道去看什麼資料、問什麼人。而不是對那幾個英文字母多熟。在多數 PM / 社創的日常裡，它是低頻工具。你頂多在寫企劃書、做長期規劃、寫報告給董事會或評審時，用它來「確認沒漏掉重要外部因素」。這種頻率，不值得當成需要反覆操練的技能。容易淪為「列點清單」，沒有分析。很多 PESTLE 的實作是：每一格列三點，看起來很完整，但沒有觸及「哪些因素真的會改變我們的策略選擇」。這種缺陷，靠的是策略思維與系統思考去補，跟多練 PESTLE 本身也無關。" },
         { name: "Competitive Advantage", status: "need" },
         { name: "Strategic Thinking", status: "learning" },
       ]}
@@ -699,8 +771,10 @@ const ROADMAP_DATA = [
       { name: "上市", skills: [
         { name: "Go-to-Market Strategy", status: "need" },
         { name: "Release Strategies", status: "need" },
-        { name: "Feature Toggles / Dark Launch", status: "need" },
-        { name: "Growth Hacking", status: "need" },
+        { name: "Feature Toggles / Dark Launch", status: "have" },
+        { name: "Growth Hacking", status: "wont",
+          reason: "應該拆回基礎能力（funnel、實驗設計、單位經濟），而不是當一顆要不要學的大球。",
+          reasonDetail: "在你的技能地圖裡，更應該拆回基礎能力。把 Growth Hacking 拆解，而不是當作一顆要不要學的大球，比較符合你要的精確度。實際上，Growth Hacking 這顆球底下是：對 funnel / AARRR / 北極星指標的理解（基本產品度量）、設計與解讀實驗（A/B test、分群、樣本量、指標選擇）、基礎行銷／文案（landing page、email / in-app message）、使用者洞察與動機理解、商業模式與單位經濟（LTV、CAC、付費結構）。這些東西各自都有比「學 growth hacking」更好的學習入口，而且你很多已經在碰。把注意力放在這些基礎能力的打磨，長期複利會比去上幾堂打著 Growth Hacking 標籤的課高很多。" },
       ]}
     ]
   },
@@ -778,7 +852,7 @@ const SKILLS_DATA = [
   { cat: "商業與策略", skill: "市場規模評估（TAM/SAM/SOM）", status: "need", priority: 60, note: "PDM 面試必考", social: "low" },
   { cat: "商業與策略", skill: "Business Model Canvas", status: "need", priority: 55, note: "理解商業邏輯", social: "mid" },
   { cat: "商業與策略", skill: "競品分析", status: "partial", priority: 80, note: "Phase 1 作業：輸出一份", social: "low" },
-  { cat: "商業與策略", skill: "Porter's Five Forces", status: "need", priority: 40, note: "概念理解即可", social: "low" },
+  { cat: "商業與策略", skill: "Porter's Five Forces", status: "wont", priority: 40, note: "概念理解即可", social: "low", reason: "概念理解即可，不需深入。" },
   { cat: "執行力", skill: "OKR 設定", status: "have", priority: 90, note: "Scrum Master 期間用過", social: "mid" },
   { cat: "執行力", skill: "RICE / MoSCoW 優先序", status: "partial", priority: 85, note: "理論懂，需要實際帶過一輪", social: "low" },
   { cat: "執行力", skill: "PRD 撰寫", status: "partial", priority: 95, note: "Phase 1 首要任務", social: "low" },
@@ -797,9 +871,12 @@ const SKILLS_DATA = [
   { cat: "產品發現", skill: "Jobs to Be Done（JTBD）", status: "partial", priority: 75, note: "概念理解中", social: "mid" },
   { cat: "產品發現", skill: "Usability Testing", status: "need", priority: 65, note: "", social: "low" },
   { cat: "產品發現", skill: "Problem Definition", status: "have", priority: 90, note: "工程師debug思維直接轉", social: "high" },
+  { cat: "產品發現", skill: "Service Design", status: "need", priority: 55, note: "長期社創工具：NGO/社企方案設計核心", social: "high" },
   { cat: "實驗驗證", skill: "MVP 定義", status: "partial", priority: 85, note: "理論懂，需要輸出案例", social: "mid" },
   { cat: "實驗驗證", skill: "A/B Testing 執行", status: "need", priority: 70, note: "", social: "low" },
-  { cat: "實驗驗證", skill: "假型（Fake Door）測試", status: "need", priority: 50, note: "", social: "low" },
+  { cat: "實驗驗證", skill: "假型（Fake Door）測試", status: "wont", priority: 50, note: "概念理解就好", social: "low",
+    reason: "概念理解就好；真正要練的是「如何問對問題、選對驗證方法」。",
+    reasonDetail: "你有前端背景＋現在在整理一整套技能圖，對你而言更核心的是「實驗設計與驗證思維」，而不是每個 tactic 的細緻玩法。你只要能聽懂這個詞在會議裡出現時的意思：知道它是「先露出入口，還沒做完功能，用點擊看需求」，能評估對你現在的產品／社會現場是否合適。真正需要刻意練的，是「如何問對問題、選對驗證方法」。多數時候你會有更乾淨的替代方案：訪談、可用性測試、原型測試、等候名單（waitlist）、Landing Page 測試、價格／方案實驗等等。假門只是眾多選項之一，不值得獨立成一項長期修煉目標。" },
   { cat: "產品行銷", skill: "GTM Strategy", status: "need", priority: 60, note: "PJM 較少用，PDM 必要", social: "low" },
   { cat: "產品行銷", skill: "Value Proposition 設計", status: "need", priority: 70, note: "", social: "mid" },
   { cat: "產品行銷", skill: "Launch Planning", status: "need", priority: 65, note: "", social: "low" },
@@ -807,6 +884,15 @@ const SKILLS_DATA = [
   { cat: "技術能力", skill: "前端可行性評估", status: "have", priority: 90, note: "", social: "low" },
   { cat: "技術能力", skill: "後端 / DB 邏輯理解", status: "have", priority: 85, note: "", social: "low" },
   { cat: "技術能力", skill: "Figma 讀稿 / 基礎操作", status: "have", priority: 80, note: "", social: "low" },
+  // AI-Native PM：只列與 ROADMAP_DATA「Advanced / AI PM」不重疊的項目。
+  // Prompt Engineering / AI Feature Design / Model Limitation 評估 已在該分類標為 have。
+  { cat: "AI-Native PM", skill: "RAG 知識庫治理", status: "need", priority: 70, note: "切偵策略、資料新鮮度、權限分層、回答品質評估", social: "mid" },
+  { cat: "AI-Native PM", skill: "AI 輔助 discovery 的證據紀律", status: "need", priority: 80, note: "區分真實證據與模型推論", social: "high" },
+  { cat: "AI-Native PM", skill: "vibe-coding prototype", status: "partial", priority: 85, note: "本站與 portfolio 即為產出", social: "mid" },
+  { cat: "AI-Native PM", skill: "Agent 工作流設計", status: "partial", priority: 75, note: "拆解任務、工具邊界、人工介入點、失敗回復", social: "mid" },
+  // 轉職敘事：面試的實際門檻，不是技術問題。
+  { cat: "轉職敘事", skill: "Why PM / Why now / Why you 敘事", status: "need", priority: 95, note: "含工程→PM 的能力翻譯；面試必問", social: "high" },
+  { cat: "轉職敘事", skill: "STAR 故事庫（3–5 則）", status: "need", priority: 90, note: "含社創動機與 PM 能力的連結", social: "high" },
 ];
 
 const JOBS_DATA = [
@@ -815,6 +901,7 @@ const JOBS_DATA = [
     rank: 1, tier: "top",
     title: "AI Project Manager (PM)",
     company: "MaiAgent 思邁智能",
+    pdmExposure: "high",
     type: "PJM + PDM",
     salary: "75–100 萬/年",
     exp: "3 年以上",
@@ -827,6 +914,7 @@ const JOBS_DATA = [
     rank: 2, tier: "top",
     title: "Project Manager（Shopify 系統整合）",
     company: "Akohub",
+    pdmExposure: "mid",
     type: "PJM",
     salary: "38–65k/月",
     exp: "1 年以上",
@@ -839,6 +927,7 @@ const JOBS_DATA = [
     rank: 3, tier: "top",
     title: "Project Manager 專案經理",
     company: "25sprout 新芽網路",
+    pdmExposure: "mid",
     type: "PJM",
     salary: "65–77 萬/年",
     exp: "2 年以上",
@@ -851,6 +940,7 @@ const JOBS_DATA = [
     rank: 4, tier: "top",
     title: "產品經理 PM（Tasker 外包網）",
     company: "addcn",
+    pdmExposure: "high",
     type: "PDM",
     salary: "60–85 萬/年",
     exp: "2 年以上",
@@ -863,6 +953,7 @@ const JOBS_DATA = [
     rank: 5, tier: "top",
     title: "Junior Project Manager（RPA 產品）",
     company: "IsCoolLab",
+    pdmExposure: "low",
     type: "PJM",
     salary: "面議（估 45–60k）",
     exp: "2 年以上",
@@ -1092,7 +1183,59 @@ const JOBS_DATA = [
 // ===== SNAPSHOT HISTORY =====
 // 每次更新技能資料時，將舊版 SKILLS_DATA 推入此陣列（含 date 標籤）
 const SKILL_HISTORY = [
-  // { date: "2026-MM-DD", label: "...", data: [...] }
+  // { date: "2026-MM-DD", label: "...", summary: "...", data: [...] }
+  {
+    date: "2026-07-27",
+    label: "2026-07-27 改版：pipeline 主指標",
+    summary: "主指標改為 pipeline、刻意不學 8 項、新增 AI-Native PM 與轉職敘事。SKILLS_DATA 32 → 39 項（+4 AI-Native PM、+2 轉職敘事、+1 Service Design），其中 2 項轉為刻意不學，計入完成度的有效項數 30 → 37。ROADMAP_DATA 維持 92 項，7 項轉為刻意不學、Feature Toggles / Dark Launch 由待學改為已具備，有效項數 92 → 85。",
+    data: [
+  // social: "high"=社創背景直接可轉移 "mid"=部分可轉移 "low"=需從頭學（SE或純商業）
+  { cat: "商業與策略", skill: "市場規模評估（TAM/SAM/SOM）", status: "need", priority: 60, note: "PDM 面試必考", social: "low" },
+  { cat: "商業與策略", skill: "Business Model Canvas", status: "need", priority: 55, note: "理解商業邏輯", social: "mid" },
+  { cat: "商業與策略", skill: "競品分析", status: "partial", priority: 80, note: "Phase 1 作業：輸出一份", social: "low" },
+  { cat: "商業與策略", skill: "Porter's Five Forces", status: "wont", priority: 40, note: "概念理解即可", social: "low", reason: "概念理解即可，不需深入。" },
+  { cat: "執行力", skill: "OKR 設定", status: "have", priority: 90, note: "Scrum Master 期間用過", social: "mid" },
+  { cat: "執行力", skill: "RICE / MoSCoW 優先序", status: "partial", priority: 85, note: "理論懂，需要實際帶過一輪", social: "low" },
+  { cat: "執行力", skill: "PRD 撰寫", status: "partial", priority: 95, note: "Phase 1 首要任務", social: "low" },
+  { cat: "執行力", skill: "Agile / Scrum", status: "have", priority: 95, note: "SM 3個月，直接對應", social: "low" },
+  { cat: "執行力", skill: "Risk Management", status: "need", priority: 45, note: "PJM 較重要", social: "mid" },
+  { cat: "人員領導", skill: "跨部門溝通", status: "have", priority: 90, note: "工程師 + 獵頭背景都有", social: "high" },
+  { cat: "人員領導", skill: "Stakeholder Alignment", status: "have", priority: 90, note: "SM 期間實戰過", social: "high" },
+  { cat: "人員領導", skill: "Executive Communication", status: "need", priority: 70, note: "需要練習 C-level 簡報", social: "mid" },
+  { cat: "人員領導", skill: "Conflict Resolution", status: "have", priority: 75, note: "", social: "high" },
+  { cat: "數據分析", skill: "GA4 / 分析工具", status: "partial", priority: 90, note: "Phase 1：完成 GA4 認證", social: "low" },
+  { cat: "數據分析", skill: "SQL（Product Analytics）", status: "partial", priority: 85, note: "Phase 2：Mode Analytics Tutorial", social: "low" },
+  { cat: "數據分析", skill: "Funnel / Cohort 分析", status: "need", priority: 85, note: "面試必問", social: "low" },
+  { cat: "數據分析", skill: "A/B Testing 設計", status: "need", priority: 70, note: "", social: "low" },
+  { cat: "數據分析", skill: "North Star Metric", status: "partial", priority: 80, note: "理解概念，需要實例", social: "low" },
+  { cat: "產品發現", skill: "User Interview 設計", status: "need", priority: 80, note: "PDM 核心，需補", social: "high" },
+  { cat: "產品發現", skill: "Jobs to Be Done（JTBD）", status: "partial", priority: 75, note: "概念理解中", social: "mid" },
+  { cat: "產品發現", skill: "Usability Testing", status: "need", priority: 65, note: "", social: "low" },
+  { cat: "產品發現", skill: "Problem Definition", status: "have", priority: 90, note: "工程師debug思維直接轉", social: "high" },
+  { cat: "產品發現", skill: "Service Design", status: "need", priority: 55, note: "長期社創工具：NGO/社企方案設計核心", social: "high" },
+  { cat: "實驗驗證", skill: "MVP 定義", status: "partial", priority: 85, note: "理論懂，需要輸出案例", social: "mid" },
+  { cat: "實驗驗證", skill: "A/B Testing 執行", status: "need", priority: 70, note: "", social: "low" },
+  { cat: "實驗驗證", skill: "假型（Fake Door）測試", status: "wont", priority: 50, note: "概念理解就好", social: "low",
+    reason: "概念理解就好；真正要練的是「如何問對問題、選對驗證方法」。",
+    reasonDetail: "你有前端背景＋現在在整理一整套技能圖，對你而言更核心的是「實驗設計與驗證思維」，而不是每個 tactic 的細緻玩法。你只要能聽懂這個詞在會議裡出現時的意思：知道它是「先露出入口，還沒做完功能，用點擊看需求」，能評估對你現在的產品／社會現場是否合適。真正需要刻意練的，是「如何問對問題、選對驗證方法」。多數時候你會有更乾淨的替代方案：訪談、可用性測試、原型測試、等候名單（waitlist）、Landing Page 測試、價格／方案實驗等等。假門只是眾多選項之一，不值得獨立成一項長期修煉目標。" },
+  { cat: "產品行銷", skill: "GTM Strategy", status: "need", priority: 60, note: "PJM 較少用，PDM 必要", social: "low" },
+  { cat: "產品行銷", skill: "Value Proposition 設計", status: "need", priority: 70, note: "", social: "mid" },
+  { cat: "產品行銷", skill: "Launch Planning", status: "need", priority: 65, note: "", social: "low" },
+  { cat: "技術能力", skill: "API / 系統架構溝通", status: "have", priority: 95, note: "最大優勢，直接命中JD", social: "low" },
+  { cat: "技術能力", skill: "前端可行性評估", status: "have", priority: 90, note: "", social: "low" },
+  { cat: "技術能力", skill: "後端 / DB 邏輯理解", status: "have", priority: 85, note: "", social: "low" },
+  { cat: "技術能力", skill: "Figma 讀稿 / 基礎操作", status: "have", priority: 80, note: "", social: "low" },
+  // AI-Native PM：只列與 ROADMAP_DATA「Advanced / AI PM」不重疊的項目。
+  // Prompt Engineering / AI Feature Design / Model Limitation 評估 已在該分類標為 have。
+  { cat: "AI-Native PM", skill: "RAG 知識庫治理", status: "need", priority: 70, note: "切偵策略、資料新鮮度、權限分層、回答品質評估", social: "mid" },
+  { cat: "AI-Native PM", skill: "AI 輔助 discovery 的證據紀律", status: "need", priority: 80, note: "區分真實證據與模型推論", social: "high" },
+  { cat: "AI-Native PM", skill: "vibe-coding prototype", status: "partial", priority: 85, note: "本站與 portfolio 即為產出", social: "mid" },
+  { cat: "AI-Native PM", skill: "Agent 工作流設計", status: "partial", priority: 75, note: "拆解任務、工具邊界、人工介入點、失敗回復", social: "mid" },
+  // 轉職敘事：面試的實際門檻，不是技術問題。
+  { cat: "轉職敘事", skill: "Why PM / Why now / Why you 敘事", status: "need", priority: 95, note: "含工程→PM 的能力翻譯；面試必問", social: "high" },
+  { cat: "轉職敘事", skill: "STAR 故事庫（3–5 則）", status: "need", priority: 90, note: "含社創動機與 PM 能力的連結", social: "high" },
+]
+  }
 ];
 
 let activeSnapshotKey = "current";
@@ -1106,6 +1249,7 @@ function getActiveSkillsData() {
 function onSnapshotChange() {
   activeSnapshotKey = document.getElementById('snapshot-select').value;
   renderSkills();
+  renderCompletionNote();
   if (radarInitialized) {
     renderMainRadar();
     document.getElementById('radar-sub-card').style.display = 'none';
@@ -1140,8 +1284,8 @@ function renderRoadmap() {
     let groupsHtml = '';
     phase.groups.forEach(g => {
       const tagsHtml = g.skills.map(s =>
-        `<span class="skill-tag ${s.status}">${
-          s.status === 'have' ? '✓ ' : s.status === 'learning' ? '⟳ ' : ''
+        `<span class="skill-tag ${s.status}"${s.reason ? ` title="刻意不學：${s.reason}"` : ''}>${
+          s.status === 'have' ? '✓ ' : s.status === 'learning' ? '⟳ ' : s.status === 'wont' ? '✕ ' : ''
         }${s.name}</span>`
       ).join('');
       groupsHtml += `<div class="skill-group">
@@ -1161,14 +1305,23 @@ function renderRoadmap() {
 }
 
 // ===== RENDER SKILLS =====
+const STATUS_BADGE = {
+  have: '✓ 已具備',
+  partial: '⟳ 部分',
+  need: '○ 待學',
+  wont: '✕ 刻意不學'
+};
+
 function renderSkills() {
   const tbody = document.getElementById('skills-tbody');
   const sorted = [...getActiveSkillsData()].sort((a,b) => b.priority - a.priority);
   tbody.innerHTML = sorted.map(s => {
-    const badgeClass = s.status === 'have' ? 'have' : s.status === 'partial' ? 'partial' : 'need';
-    const badgeLabel = s.status === 'have' ? '✓ 已具備' : s.status === 'partial' ? '⟳ 部分' : '○ 待學';
-    const fillColor = s.priority >= 80 ? '#4f46e5' : s.priority >= 60 ? '#d97706' : '#94a3b8';
-    return `<tr>
+    const badgeClass = STATUS_BADGE[s.status] ? s.status : 'need';
+    const badgeLabel = STATUS_BADGE[s.status] || STATUS_BADGE.need;
+    const fillColor = s.status === 'wont' ? '#cbd5e1'
+      : s.priority >= 80 ? '#4f46e5' : s.priority >= 60 ? '#d97706' : '#94a3b8';
+    const note = s.status === 'wont' ? (s.reason || s.note) : s.note;
+    return `<tr class="${s.status === 'wont' ? 'row-wont' : ''}">
       <td style="color:var(--muted);font-size:11px">${s.cat}</td>
       <td style="font-weight:500">${s.skill}</td>
       <td><span class="badge ${badgeClass}">${badgeLabel}</span></td>
@@ -1178,7 +1331,7 @@ function renderSkills() {
           <span style="font-size:11px;color:var(--muted)">${s.priority}</span>
         </div>
       </td>
-      <td style="color:var(--muted);font-size:12px">${s.note}</td>
+      <td style="color:var(--muted);font-size:12px">${note}</td>
       <td>${s.social === 'high' ? '<span class="social-badge high">✓ 可轉移</span>' : s.social === 'mid' ? '<span class="social-badge mid">△ 部分</span>' : ''}</td>
     </tr>`;
   }).join('');
@@ -1186,6 +1339,19 @@ function renderSkills() {
 
 // ===== RENDER JOBS =====
 let currentTier = 'top';
+
+const PDM_LABEL = { high: '高', mid: '中', low: '低' };
+
+// Job listings have a shelf life of roughly 4–8 weeks. Say so out loud.
+function renderJobsChecked() {
+  const el = document.getElementById('jobs-checked');
+  const checked = new Date(JOBS_META.checkedAt + 'T00:00:00');
+  const weeks = Math.floor((Date.now() - checked.getTime()) / (7 * 24 * 3600 * 1000));
+  const stale = weeks >= 4;
+  el.className = 'jobs-checked' + (stale ? ' stale' : '');
+  el.textContent = `清單最後核對：${JOBS_META.checkedAt}（距今約 ${weeks} 週）`
+    + (stale ? ' — 職缺保鮮期約 4–8 週，建議重新核對連結與開缺狀態。' : '');
+}
 
 function filterJobs(tier) {
   currentTier = tier;
@@ -1205,6 +1371,7 @@ function renderJobs() {
         <div class="job-rank">${j.rank}</div>
         <div style="display:flex;align-items:center;gap:8px">
           <span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:4px;background:${tierColor[j.tier]}18;color:${tierColor[j.tier]};border:1px solid ${tierColor[j.tier]}30">${tierLabel[j.tier]}</span>
+          ${j.pdmExposure ? `<span class="pdm-badge ${j.pdmExposure}" title="能否在職內累積 discovery / PRD / 指標所有權">PDM 曝光 ${PDM_LABEL[j.pdmExposure]}</span>` : ''}
           <span class="match-score">${j.match}%</span>
         </div>
       </div>
@@ -1225,17 +1392,22 @@ function statusScore(s) {
   return { have: 3, partial: 2, learning: 1, need: 0 }[s] ?? 0;
 }
 
+// "wont" items are excluded from every score — a skill you deliberately skipped
+// must not drag down the number, otherwise the scope cut costs you twice.
 function buildCatGroups() {
   const cats = {};
   getActiveSkillsData().forEach(s => {
+    if (s.status === 'wont') return;
     if (!cats[s.cat]) cats[s.cat] = [];
     cats[s.cat].push(s);
   });
-  return Object.entries(cats).map(([cat, skills]) => ({
-    cat,
-    score: Math.round(skills.reduce((sum, s) => sum + statusScore(s.status), 0) / skills.length / 3 * 100),
-    skills
-  }));
+  return Object.entries(cats)
+    .filter(([, skills]) => skills.length > 0)
+    .map(([cat, skills]) => ({
+      cat,
+      score: Math.round(skills.reduce((sum, s) => sum + statusScore(s.status), 0) / skills.length / 3 * 100),
+      skills
+    }));
 }
 
 let mainChart = null, subChart = null, catGroups = null;
@@ -1350,21 +1522,22 @@ function renderSkillTree() {
     if (!cats[s.cat]) cats[s.cat] = [];
     cats[s.cat].push(s);
   });
-  const statusIcon = { have: '✓', partial: '⟳', need: '○' };
+  const statusIcon = { have: '✓', partial: '⟳', need: '○', wont: '✕' };
   const container = document.getElementById('skill-tree');
   container.innerHTML = Object.entries(cats).map(([cat, skills]) => {
     const sorted = [...skills].sort((a, b) => b.priority - a.priority);
-    const haveCount = skills.filter(s => s.status === 'have').length;
-    const pct = Math.round(haveCount / skills.length * 100);
+    const counted = skills.filter(s => s.status !== 'wont');
+    const haveCount = counted.filter(s => s.status === 'have').length;
+    const pct = counted.length ? Math.round(haveCount / counted.length * 100) : 0;
     return `<div class="tree-cat" data-open="true">
       <div class="tree-cat-header" onclick="toggleCat(this)">
         <span class="tree-toggle">▾</span>
         <span class="tree-cat-name">${cat}</span>
-        <span class="tree-cat-stats">${haveCount}/${skills.length} 已具備</span>
+        <span class="tree-cat-stats">${haveCount}/${counted.length} 已具備${skills.length > counted.length ? `（+${skills.length - counted.length} 刻意不學）` : ''}</span>
         <div class="tree-cat-bar"><div class="tree-cat-bar-fill" style="width:${pct}%"></div></div>
       </div>
-      <div class="tree-skills">
-        ${sorted.map(s => `<div class="tree-skill">
+      <div class="tree-skills cat-body">
+        ${sorted.map(s => `<div class="tree-skill ${s.status === 'wont' ? 'wont' : ''}"${s.reason ? ` title="刻意不學：${s.reason}"` : ''}>
           <span class="tree-skill-icon ${s.status}">${statusIcon[s.status] || '○'}</span>
           <span class="tree-skill-name">${s.skill}</span>
           ${s.social === 'high' ? '<span class="social-badge high">社創✓</span>' : s.social === 'mid' ? '<span class="social-badge mid">社創△</span>' : ''}
@@ -1380,8 +1553,99 @@ function toggleCat(header) {
   const isOpen = cat.dataset.open === 'true';
   cat.dataset.open = isOpen ? 'false' : 'true';
   cat.querySelector('.tree-toggle').textContent = isOpen ? '▸' : '▾';
-  cat.querySelector('.tree-skills').style.display = isOpen ? 'none' : '';
+  cat.querySelector('.cat-body').style.display = isOpen ? 'none' : '';
 }
+
+// ===== PIPELINE (North Star) =====
+const PIPELINE_STAGES = [
+  { key: 'applied',   label: '已投遞' },
+  { key: 'screening', label: '履歷篩選' },
+  { key: 'interview', label: '面試邀約' },
+  { key: 'final',     label: '進入複試' },
+  { key: 'offer',     label: 'Offer' }
+];
+
+function renderPipeline() {
+  document.getElementById('pipeline-grid').innerHTML = PIPELINE_STAGES.map(st => {
+    const n = PIPELINE_DATA[st.key] ?? 0;
+    const cls = 'pipeline-stat' + (st.key === 'offer' ? ' offer' : '') + (n === 0 ? ' zero' : '');
+    return `<div class="${cls}">
+      <div class="num">${n}</div>
+      <div class="label">${st.label}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('pipeline-foot').textContent =
+    `最後更新：${PIPELINE_DATA.updatedAt} · 手動維護於 PIPELINE_DATA`;
+}
+
+// ===== COMPLETION (input metric — deliberately demoted) =====
+function calcCompletion() {
+  const counted = getActiveSkillsData().filter(s => s.status !== 'wont');
+  if (!counted.length) return { pct: 0, have: 0, partial: 0, need: 0, total: 0 };
+  const have = counted.filter(s => s.status === 'have').length;
+  const partial = counted.filter(s => s.status === 'partial').length;
+  return {
+    pct: Math.round((have + partial * 0.5) / counted.length * 100),
+    have, partial,
+    need: counted.length - have - partial,
+    total: counted.length
+  };
+}
+
+function renderCompletionNote() {
+  const c = calcCompletion();
+  const wont = getActiveSkillsData().filter(s => s.status === 'wont').length;
+  document.getElementById('completion-note').textContent =
+    `完成度 ${c.pct}%（${c.have} 已具備 / ${c.partial} 部分 / ${c.need} 待學，共 ${c.total} 項；`
+    + `另有 ${wont} 項刻意不學，不計入）— input metric，非目標。`;
+}
+
+// ===== DELIBERATELY NOT LEARNING =====
+// Scans both data sources and dedupes by concept, because Five Forces lives in
+// ROADMAP_DATA ("Five Forces Analysis") and SKILLS_DATA ("Porter's Five Forces").
+const WONT_ALIASES = { "Five Forces Analysis": "Five Forces", "Porter's Five Forces": "Five Forces" };
+
+function collectWont() {
+  const byKey = new Map();
+  const add = (name, cat, item) => {
+    const key = WONT_ALIASES[name] || name;
+    const existing = byKey.get(key);
+    if (existing) {
+      if (!existing.cats.includes(cat)) existing.cats.push(cat);
+      if (!existing.reasonDetail && item.reasonDetail) existing.reasonDetail = item.reasonDetail;
+      return;
+    }
+    byKey.set(key, { name: key, cats: [cat], reason: item.reason || '{{TBD}}', reasonDetail: item.reasonDetail });
+  };
+  ROADMAP_DATA.forEach(phase => phase.groups.forEach(g => g.skills.forEach(s => {
+    if (s.status === 'wont') add(s.name, phase.title, s);
+  })));
+  SKILLS_DATA.forEach(s => { if (s.status === 'wont') add(s.skill, s.cat, s); });
+  return [...byKey.values()];
+}
+
+function renderWontList() {
+  const items = collectWont();
+  document.getElementById('wont-panel').innerHTML = `
+    <div class="tree-cat" data-open="true">
+      <div class="tree-cat-header" onclick="toggleWont(this)">
+        <span class="tree-toggle">▾</span>
+        <span class="tree-cat-name">刻意不學 ${items.length} 項，理由如下</span>
+        <span class="tree-cat-stats">scope cut — 不計入完成度</span>
+      </div>
+      <div class="wont-list cat-body">
+        ${items.map(w => `<div class="wont-item">
+          <div class="wont-name">${w.name}</div>
+          <div class="wont-reason">${w.reason}${
+            w.reasonDetail ? `<details class="wont-detail"><summary>展開完整理由</summary>${w.reasonDetail}</details>` : ''
+          }</div>
+          <div class="wont-src">${w.cats.join(' · ')}</div>
+        </div>`).join('')}
+      </div>
+    </div>`;
+}
+
+function toggleWont(header) { toggleCat(header); }
 
 // ===== TAB SWITCH =====
 function switchTab(name) {
@@ -1403,8 +1667,12 @@ function switchTab(name) {
   });
 })();
 
+renderPipeline();
 renderRoadmap();
 renderSkills();
+renderCompletionNote();
+renderWontList();
+renderJobsChecked();
 renderJobs();
 </script>
 </body>
