@@ -660,10 +660,10 @@ const PIPELINE_DATA = {
 // A blocked request (403 etc.) is NOT evidence a job is closed — see the script.
 // closedAt on a job is the removal timer: it is retired on the next run 7+ days later.
 const JOBS_META = {
-  checkedAt: "2026-07-27",
+  checkedAt: "2026-08-03",
   checkMethod: "HEAD 每個職缺頁，依 HTTP 狀態碼判定",
   trackingSince: "2026-06-30",  // 統計窗口起點：職缺清單建立日
-  retiredTotal: 0                // 累計因下架而從清單移除的筆數
+  retiredTotal: 10                // 累計因下架而從清單移除的筆數
 };
 
 // status: "have" | "learning" | "need" | "wont"
@@ -969,20 +969,7 @@ const JOBS_DATA = [
     url: "https://www.cake.me/companies/akohub/jobs/project-manager-shopify-store-system-integration"
   },
   {
-    rank: 3, tier: "top", health: "closed", closedAt: "2026-07-27",
-    title: "Project Manager 專案經理",
-    company: "25sprout 新芽網路",
-    pdmExposure: "mid",
-    type: "PJM",
-    salary: "65–77 萬/年",
-    exp: "2 年以上",
-    match: 82,
-    tags: ["Web開發", "SaaS", "部分遠端", "Jira/GitLab"],
-    why: "需熟悉網站開發流程（你完全符合）、用 GitLab/Jira（你用過）。成熟公司，PM 成長環境穩定。",
-    url: "https://www.cake.me/companies/25sprout_LLC/jobs/project-manager-c44"
-  },
-  {
-    rank: 4, tier: "top", health: "open",
+    rank: 3, tier: "top", health: "open",
     title: "產品經理 PM（Tasker 外包網）",
     company: "addcn",
     pdmExposure: "high",
@@ -995,7 +982,7 @@ const JOBS_DATA = [
     url: "https://www.cake.me/companies/addcn/jobs/tasker-outsourcing-network-product-manager-pm"
   },
   {
-    rank: 5, tier: "top", health: "open",
+    rank: 4, tier: "top", health: "open",
     title: "Junior Project Manager（RPA 產品）",
     company: "IsCoolLab",
     pdmExposure: "low",
@@ -1008,7 +995,7 @@ const JOBS_DATA = [
     url: "https://www.cake.me/companies/iscoollab/jobs/junior-project-manager-502"
   },
   {
-    rank: 6, tier: "track", health: "open",
+    rank: 5, tier: "track", health: "open",
     title: "Associate Product Manager",
     company: "GoFreight",
     type: "APM",
@@ -1020,7 +1007,7 @@ const JOBS_DATA = [
     url: "https://www.cake.me/companies/GoFreight/jobs/associate-product-manager-ccf"
   },
   {
-    rank: 7, tier: "track", health: "open",
+    rank: 6, tier: "track", health: "open",
     title: "Product Manager",
     company: "雙橡教育 Twin Oaks",
     type: "PDM",
@@ -1032,7 +1019,7 @@ const JOBS_DATA = [
     url: "https://www.cake.me/companies/twin-oaks/jobs/2026Spring-PM"
   },
   {
-    rank: 8, tier: "track", health: "open",
+    rank: 7, tier: "track", health: "open",
     title: "Product Manager（電商 SaaS）",
     company: "Shopline",
     type: "PDM",
@@ -1044,19 +1031,7 @@ const JOBS_DATA = [
     url: "https://www.cake.me/companies/shopline/jobs/tpd0303product-manager"
   },
   {
-    rank: 9, tier: "track", health: "closed", closedAt: "2026-07-27",
-    title: "Assistant Project Manager",
-    company: "Manuscript",
-    type: "APM / PJM",
-    salary: "面議",
-    exp: "1 年以上",
-    match: 70,
-    tags: ["Assistant PM", "入門", "1yr OK"],
-    why: "Assistant PM 職級適合轉職初期，快速累積實戰。",
-    url: "https://www.cake.me/companies/manuscript/jobs/assistant-project-manager-594"
-  },
-  {
-    rank: 10, tier: "track", health: "open",
+    rank: 8, tier: "track", health: "open",
     title: "Amazon Project Manager（電商代操）",
     company: "HourLoop",
     type: "PJM",
@@ -1068,67 +1043,7 @@ const JOBS_DATA = [
     url: "https://www.cake.me/companies/hour-loop/jobs/amazon-amazon-project-manager"
   },
   {
-    rank: 11, tier: "track", health: "closed", closedAt: "2026-07-27",
-    title: "Product Manager",
-    company: "Portaly",
-    type: "PDM",
-    salary: "面議",
-    exp: "面議",
-    match: 65,
-    tags: ["創作者工具", "連結頁SaaS", "小團隊"],
-    why: "Portaly 是台灣 link-in-bio SaaS，產品有趣。小團隊 PM 磨練快，但需要確認實際年資要求。",
-    url: "https://www.cake.me/companies/portaly/jobs/portaly-product-manager-product-manager-2026"
-  },
-  {
-    rank: 12, tier: "track", health: "closed", closedAt: "2026-07-27",
-    title: "Product Planning Manager",
-    company: "動見 OmniEyes",
-    type: "PDM",
-    salary: "面議",
-    exp: "面議",
-    match: 65,
-    tags: ["影像分析", "AI產品", "B2B"],
-    why: "影像 AI 公司，技術 PM 背景有優勢。需要確認是否需要影像/CV 領域知識。",
-    url: "https://www.cake.me/companies/omnieyes/jobs/product-planning-manager"
-  },
-  {
-    rank: 13, tier: "track", health: "closed", closedAt: "2026-07-27",
-    title: "QA Project Manager",
-    company: "GliaCloud",
-    type: "PJM + QA",
-    salary: "面議",
-    exp: "面議",
-    match: 65,
-    tags: ["QA + PM", "AI影片", "技術背景"],
-    why: "QA + PM 混合職，你的工程背景直接適用。GliaCloud 做 AI 影片生成，產品有趣。",
-    url: "https://www.cake.me/companies/gliacloud/jobs/qa-project-manager"
-  },
-  {
-    rank: 14, tier: "later", health: "closed", closedAt: "2026-07-27",
-    title: "Product Manager",
-    company: "Capital Layer",
-    type: "PDM",
-    salary: "面議",
-    exp: "面議",
-    match: 60,
-    tags: ["Fintech", "投資領域", "PDM"],
-    why: "金融領域知識需要補。等對金融產品有更多了解後再投。",
-    url: "https://www.cake.me/companies/capitallayer/jobs/product-manager-capital-layer"
-  },
-  {
-    rank: 15, tier: "later", health: "closed", closedAt: "2026-07-27",
-    title: "BD / PM（法律科技）",
-    company: "Lawsnote",
-    type: "BD + PM",
-    salary: "面議",
-    exp: "面議",
-    match: 60,
-    tags: ["法律科技", "BD性質", "利基市場"],
-    why: "法律領域知識門檻高。BD + PM 混合角色，若對法律科技有興趣可列入長期選項。",
-    url: "https://www.cake.me/companies/lawsnote/jobs/lawsnote.bd"
-  },
-  {
-    rank: 16, tier: "later", health: "open",
+    rank: 9, tier: "later", health: "open",
     title: "Project Manager（政府標案）",
     company: "SYSTEX 精誠資訊",
     type: "PJM",
@@ -1140,7 +1055,7 @@ const JOBS_DATA = [
     url: "https://www.cake.me/companies/systex/jobs/pjm-project-manager-government-projects-v30h"
   },
   {
-    rank: 17, tier: "later", health: "open",
+    rank: 10, tier: "later", health: "open",
     title: "Business Analyst",
     company: "雲策數據",
     type: "BA",
@@ -1152,7 +1067,7 @@ const JOBS_DATA = [
     url: "https://www.cake.me/companies/104-company-1a2x6blq4a/jobs/business-analyst1"
   },
   {
-    rank: 18, tier: "later", health: "open",
+    rank: 11, tier: "later", health: "open",
     title: "Brand Product Manager（GTM）",
     company: "WitsPer 智選家",
     type: "PDM + 行銷",
@@ -1164,19 +1079,7 @@ const JOBS_DATA = [
     url: "https://www.cake.me/companies/witsper/jobs/bm-brand-product-manager-gtm-strategy"
   },
   {
-    rank: 19, tier: "later", health: "closed", closedAt: "2026-07-27",
-    title: "PM（新媒體 / 廣告行銷）",
-    company: "簡訊設計",
-    type: "PDM",
-    salary: "面議",
-    exp: "面議",
-    match: 55,
-    tags: ["廣告行銷", "新媒體", "創意重"],
-    why: "廣告 / 新媒體 PM 和技術 PM 差異大，需要行銷創意背景。暫緩。",
-    url: "https://www.cake.me/companies/simpleinfo/jobs/zhiqi-qiqi-project-manager-pm"
-  },
-  {
-    rank: 20, tier: "later", health: "open",
+    rank: 12, tier: "later", health: "open",
     title: "Project Manager（健康領域）",
     company: "原氣",
     type: "PJM",
@@ -1188,31 +1091,7 @@ const JOBS_DATA = [
     url: "https://www.cake.me/companies/drbreaths/jobs/project-manage"
   },
   {
-    rank: 21, tier: "later", health: "closed", closedAt: "2026-07-27",
-    title: "新業務品牌產品開發 PM",
-    company: "美科實業",
-    type: "PDM",
-    salary: "面議",
-    exp: "面議",
-    match: 55,
-    tags: ["製造業", "新事業", "品牌開發"],
-    why: "製造業新事業開發，和 SaaS / 科技 PM 路徑差異較大。",
-    url: "https://www.cake.me/companies/macrohi/jobs/new-business-unit-brand-product-development-pm"
-  },
-  {
-    rank: 22, tier: "later", health: "closed", closedAt: "2026-07-27",
-    title: "Product Manager",
-    company: "Nitra",
-    type: "PDM",
-    salary: "面議",
-    exp: "面議",
-    match: 55,
-    tags: ["美國醫療公司", "英文環境", "Healthcare"],
-    why: "美國醫療 SaaS，全英文環境，領域知識要求高。長期目標可以列，現在時機尚早。",
-    url: "https://www.cake.me/companies/nitra/jobs/product-manager-taipei-371"
-  },
-  {
-    rank: 23, tier: "later", health: "unknown",
+    rank: 13, tier: "later", health: "unknown",
     title: "PM（台中）",
     company: "庠菻",
     type: "PJM",
