@@ -660,7 +660,7 @@ const PIPELINE_DATA = {
 // A blocked request (403 etc.) is NOT evidence a job is closed — see the script.
 // closedAt on a job is the removal timer: it is retired on the next run 7+ days later.
 const JOBS_META = {
-  checkedAt: "2026-08-03",
+  checkedAt: "2026-08-10",
   checkMethod: "HEAD 每個職缺頁，依 HTTP 狀態碼判定",
   trackingSince: "2026-06-30",  // 統計窗口起點：職缺清單建立日
   retiredTotal: 10                // 累計因下架而從清單移除的筆數
@@ -1007,7 +1007,7 @@ const JOBS_DATA = [
     url: "https://www.cake.me/companies/GoFreight/jobs/associate-product-manager-ccf"
   },
   {
-    rank: 6, tier: "track", health: "open",
+    rank: 6, tier: "track", health: "closed", closedAt: "2026-08-10",
     title: "Product Manager",
     company: "雙橡教育 Twin Oaks",
     type: "PDM",
