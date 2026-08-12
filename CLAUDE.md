@@ -73,3 +73,4 @@ CI 存在**不代表網站有 build step**——`index.html` 仍然是打開就�
 - **`JOBS_META.checkedAt` 只能由真的核對過的流程更新**（腳本會自己更新，手動改請先實跑）。
 - **`renderApplyGap()` 是刻意的刺**：主推開放數 vs `PIPELINE_DATA.applied`。維護清單很像在前進，但它不會讓投遞數字動。不要為了讓那行紅字消失而去改資料。
 - ⚠️ **GitHub 會在 repo 連續 60 天無活動後停掉排程 workflow**，要用 email 重新啟用。
+- ⚠️ **改 `index.html` 前先 `git pull --rebase`。** CI 每週一會自動 commit 這個檔案，所以本機放個幾天就會落後，而且是**靜默地**落後——`index.html` 是本機與 CI 唯一的併發寫入點。不先 pull 就會用舊的 `health` / `checkedAt` 蓋掉新的，等於手動製造假的 `checkedAt`。（2026-08-12 實際踩到：本機落後兩個 commit，`JOBS_META.checkedAt` 差了兩週，`JOBS_DATA` 少了 10 筆退場紀錄。）
