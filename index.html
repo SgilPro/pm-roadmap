@@ -440,7 +440,9 @@
   </div>
 
   <div class="section-title" style="margin-top:32px">PM 能力 Roadmap</div>
-  <div class="section-sub">基於 roadmap.sh + Product Compass 8 大能力框架，標記你目前的能力位置</div>
+  <!-- 說法要對得上資料：這個 tab 讀 ROADMAP_DATA，結構是 roadmap.sh 的 12 個 phase。
+       Product Compass 的 8 大能力餵的是「技能圖譜」tab（SKILLS_DATA），兩者不同，不要混寫。 -->
+  <div class="section-sub">結構沿用 roadmap.sh 的 PM roadmap（12 個 phase），標記你目前的能力位置</div>
 
   <div class="legend">
     <div class="legend-item">
@@ -469,7 +471,10 @@
   <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px">
     <div>
       <div class="section-title">技能圖譜</div>
-      <div class="section-sub">基於 Product Compass 評估框架，對應你的背景</div>
+      <!-- 逐項比對過 Product Compass 的 8 類：前 7 類都有對應，但 Product Growth 整類缺席
+           （PLG、Time to Value、onboarding、pricing 一項都沒有），位置被自加的「技術能力」佔掉。
+           這是已知缺口，不是筆誤——PDM 面試會問，補齊排在 spine 落地那一波。 -->
+      <div class="section-sub">分類沿用 Product Compass 8 大能力，另加技術能力 / AI-Native PM / 轉職敘事三類<span style="color:var(--accent4)">（已知缺口：Product Growth 尚未納入）</span></div>
       <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap">
         <span class="social-badge high">✓ 可轉移</span><span style="font-size:12px;color:var(--muted)">社創/LFT 背景直接可轉移，翻譯 PM 語言即可</span>
         <span class="social-badge mid">△ 部分</span><span style="font-size:12px;color:var(--muted)">相關經驗，需補 PM 框架</span>
@@ -547,39 +552,42 @@
     <div class="readiness-title">投遞準備度評估</div>
     <div class="readiness-sub">目前狀態：距離可以投遞還差幾個關鍵檻</div>
     <div class="readiness-grid">
+      <!-- ⚠️ 這六格的圖示與 Linear ticket 狀態是手動對齊的，2026-08-12 核對過一次。
+           上次沒對齊的代價：JOB-19 與 JOB-21 都在 7/19 就 Done，站上顯示 ❌ 顯示了 24 天。
+           手動對齊必然會再腐爛，自動同步（READINESS_DATA + check-tasks.mjs）排在 8/29。 -->
       <div class="readiness-item">
-        <div class="readiness-icon">❌</div>
+        <div class="readiness-icon">✅</div>
         <div>
           <div class="readiness-label">履歷重寫（JOB-19）</div>
-          <div class="readiness-note">SM 經歷未翻譯成 PM 語言；這是投遞最低門檻，必須先完成</div>
+          <div class="readiness-note">2026-07-19 完成：SM 經歷已翻譯成 PM 語言。投遞的最低門檻已過</div>
         </div>
       </div>
       <div class="readiness-item">
         <div class="readiness-icon">⚠️</div>
         <div>
           <div class="readiness-label">Portfolio 作品集</div>
-          <div class="readiness-note">Linkju + Voipark PM case study 已完成；但正式獨立 PRD（JOB-20）尚未做為作品集附件輸出</div>
+          <div class="readiness-note">Linkju + Voipark PM case study 已完成；正式獨立 PRD（JOB-20）<strong>尚未動工</strong>，排定 8/16 完成本體、8/22 過 prd-review 收斂。這是目前唯一擋在投遞前的產出物</div>
         </div>
       </div>
       <div class="readiness-item">
-        <div class="readiness-icon">❌</div>
+        <div class="readiness-icon">✅</div>
         <div>
           <div class="readiness-label">GA4 / 數據基礎（JOB-21）</div>
-          <div class="readiness-note">概念初步了解但未達面試水準；addcn PDM 職缺有明確要求數據分析</div>
+          <div class="readiness-note">2026-07-19 完成：GA4 與產品指標核心概念已補。SQL（JOB-23）另計，不阻擋投遞</div>
         </div>
       </div>
       <div class="readiness-item">
         <div class="readiness-icon">❌</div>
         <div>
           <div class="readiness-label">Mock Interview（JOB-25）</div>
-          <div class="readiness-note">尚未開始；PM 面試有固定套路（STAR、Product Sense），沒練習容易卡住。Claude 負責設計並主持</div>
+          <div class="readiness-note">0 / 3 輪。rubric 與題庫已就緒（<code>.claude/skills/mock-interview-product-sense</code>，五維度取最低分不取平均），排定 8/19、8/26、9/2 各一輪。Claude 負責主持與評分</div>
         </div>
       </div>
       <div class="readiness-item">
         <div class="readiness-icon">✅</div>
         <div>
           <div class="readiness-label">技術背景</div>
-          <div class="readiness-note">前端 3.5yr + 後端 1yr + SM 3mo；MaiAgent、Akohub、25sprout 等 PJM 職缺的核心要求你全部符合</div>
+          <div class="readiness-note">前端 3.5yr + 後端 1yr + SM 3mo；MaiAgent、Akohub、GoFreight 等 PJM／APM 職缺的核心要求你全部符合</div>
         </div>
       </div>
       <div class="readiness-item">
@@ -591,10 +599,12 @@
       </div>
     </div>
     <div class="readiness-verdict verdict-not-ready">
-      <strong>目前尚未達到投遞門檻。</strong> 建議完成順序：<br>
-      1. <strong>履歷重寫</strong>（一個週末）→ 2. <strong>Mock Interview 練習 2–3 輪</strong>（Claude 主持）→ 3. 投遞 <strong>Akohub</strong>（門檻最低，最快拿 title）+ <strong>MaiAgent</strong>（背景命中率最高）<br>
-      <span style="display:inline-block;margin-top:8px;font-weight:400">履歷為什麼是一個週末而不是 1–2 週：原料已足（2 份 case study、Linkju PRD 與決策記錄、SM 3 個月），缺的只是翻譯，不是產出。排成兩週會讓它變成六週。</span><br>
-      GA4 和 SQL 可邊工作邊補，不阻擋 PJM 類投遞；PDM（addcn）需要 GA4 後再投。
+      <strong>目前尚未達到投遞門檻</strong>，但擋住的東西只剩兩件：<strong>PRD</strong> 與 <strong>Mock</strong>。履歷與 GA4 已於 7/19 完成。<br>
+      建議完成順序：1. <strong>寫 PRD 本體</strong>（8/15–8/16 整個週末）→ 2. <strong>PRD 過 prd-review 收斂</strong>（8/22）→ 3. <strong>Mock 三輪</strong>（8/19、8/26、9/2）→ 4. 投遞。<br>
+      <span style="display:inline-block;margin-top:8px;font-weight:400">為什麼是 PRD 先於 Mock：Mock 是練習，PRD 是交付物。面試官看得到 PRD，看不到我練了幾輪。</span><br>
+      SQL（JOB-23）可邊工作邊補，不阻擋任何一類投遞。<br>
+      <span style="display:inline-block;margin-top:8px;font-weight:400">已排定的日期（Linear JOB-20 / JOB-22 / JOB-25）：<strong>8/16</strong> PRD 本體 → <strong>8/22</strong> PRD 收斂 → <strong>9/2</strong> Mock 輪 3 → <strong>9/13</strong> 投遞（JOB-22）。<strong>9/5–9/6 要重編職缺清單，不是重看</strong>。</span><br>
+      <span style="display:inline-block;margin-top:8px;font-weight:400">⚠️ 投遞日從 <strong>8/17 順延到 9/13</strong>，原因是 PRD 到 8/12 仍未動工。這裡記下代價而不是把日期悄悄改掉：清單建立後第一個四週已實測退場 10 / 23（43%），再等四週就是同樣的量級。<strong>順延換到的是一份 PRD，付出的是一份會繼續爛的清單。</strong></span>
     </div>
   </div>
 
