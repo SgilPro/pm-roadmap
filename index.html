@@ -670,10 +670,10 @@ const PIPELINE_DATA = {
 // A blocked request (403 etc.) is NOT evidence a job is closed — see the script.
 // closedAt on a job is the removal timer: it is retired on the next run 7+ days later.
 const JOBS_META = {
-  checkedAt: "2026-08-10",
+  checkedAt: "2026-08-17",
   checkMethod: "HEAD 每個職缺頁，依 HTTP 狀態碼判定",
   trackingSince: "2026-06-30",  // 統計窗口起點：職缺清單建立日
-  retiredTotal: 10                // 累計因下架而從清單移除的筆數
+  retiredTotal: 11                // 累計因下架而從清單移除的筆數
 };
 
 // status: "have" | "learning" | "need" | "wont"
@@ -1017,19 +1017,7 @@ const JOBS_DATA = [
     url: "https://www.cake.me/companies/GoFreight/jobs/associate-product-manager-ccf"
   },
   {
-    rank: 6, tier: "track", health: "closed", closedAt: "2026-08-10",
-    title: "Product Manager",
-    company: "雙橡教育 Twin Oaks",
-    type: "PDM",
-    salary: "40–50k/月",
-    exp: "1 年以上",
-    match: 70,
-    tags: ["1yr OK", "教育科技", "薪資偏低", "入門門檻低"],
-    why: "年資門檻低（1yr），適合作為第一份 PM。薪資偏低但能快速累積 PDM 經驗，用來換跑道後再跳。",
-    url: "https://www.cake.me/companies/twin-oaks/jobs/2026Spring-PM"
-  },
-  {
-    rank: 7, tier: "track", health: "open",
+    rank: 6, tier: "track", health: "open",
     title: "Product Manager（電商 SaaS）",
     company: "Shopline",
     type: "PDM",
@@ -1041,7 +1029,7 @@ const JOBS_DATA = [
     url: "https://www.cake.me/companies/shopline/jobs/tpd0303product-manager"
   },
   {
-    rank: 8, tier: "track", health: "open",
+    rank: 7, tier: "track", health: "open",
     title: "Amazon Project Manager（電商代操）",
     company: "HourLoop",
     type: "PJM",
@@ -1053,7 +1041,7 @@ const JOBS_DATA = [
     url: "https://www.cake.me/companies/hour-loop/jobs/amazon-amazon-project-manager"
   },
   {
-    rank: 9, tier: "later", health: "open",
+    rank: 8, tier: "later", health: "open",
     title: "Project Manager（政府標案）",
     company: "SYSTEX 精誠資訊",
     type: "PJM",
@@ -1065,7 +1053,7 @@ const JOBS_DATA = [
     url: "https://www.cake.me/companies/systex/jobs/pjm-project-manager-government-projects-v30h"
   },
   {
-    rank: 10, tier: "later", health: "open",
+    rank: 9, tier: "later", health: "open",
     title: "Business Analyst",
     company: "雲策數據",
     type: "BA",
@@ -1077,7 +1065,7 @@ const JOBS_DATA = [
     url: "https://www.cake.me/companies/104-company-1a2x6blq4a/jobs/business-analyst1"
   },
   {
-    rank: 11, tier: "later", health: "open",
+    rank: 10, tier: "later", health: "open",
     title: "Brand Product Manager（GTM）",
     company: "WitsPer 智選家",
     type: "PDM + 行銷",
@@ -1089,7 +1077,7 @@ const JOBS_DATA = [
     url: "https://www.cake.me/companies/witsper/jobs/bm-brand-product-manager-gtm-strategy"
   },
   {
-    rank: 12, tier: "later", health: "open",
+    rank: 11, tier: "later", health: "open",
     title: "Project Manager（健康領域）",
     company: "原氣",
     type: "PJM",
@@ -1101,7 +1089,7 @@ const JOBS_DATA = [
     url: "https://www.cake.me/companies/drbreaths/jobs/project-manage"
   },
   {
-    rank: 13, tier: "later", health: "unknown",
+    rank: 12, tier: "later", health: "unknown",
     title: "PM（台中）",
     company: "庠菻",
     type: "PJM",
