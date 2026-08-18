@@ -1,5 +1,8 @@
 #!/usr/bin/env node
-// 核對 JOBS_DATA 裡每個職缺連結是否還活著，並就地更新 index.html。
+// 核對 JOBS_DATA 裡每個職缺連結是否還活著，並就地更新 data/jobs.js。
+//
+// ⚠️ 寫入目標是 data/jobs.js，**不是 index.html**（2026-08-19 拆頁後改的）。
+//    這讓 CI 與人工不再寫同一個檔：index.html 之後是純人工檔，併發寫入點只剩這一個。
 //
 // 這支腳本**只查 HTTP 狀態碼**，不解析職缺頁的任何內容。
 // mentor-handoff §5 的「不做自動抓職缺」指的是「發現」——新職缺的 match%、why、
@@ -17,7 +20,7 @@ import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const FILE = path.join(ROOT, 'index.html');
+const FILE = path.join(ROOT, 'data', 'jobs.js');
 const DRY = process.argv.includes('--dry-run');
 
 const UA = 'pm-roadmap-linkcheck/1.0 (+https://github.com/SgilPro/pm-roadmap)';
@@ -99,19 +102,10 @@ function cutJobBlock(html, job) {
   return html.slice(0, openBrace) + html.slice(closeBrace + '\n  },'.length);
 }
 
-// 寫檔後把 <script> 抽出來跑 node --check。壞了就還原——絕不留下打不開的站。
+// 寫檔後直接跑 node --check。壞了就還原——絕不留下打不開的站。
+// 資料搬進 data/jobs.js 之後，這裡不必再從 HTML 裡切 <script> 了：檔案本身就是 JS。
 function assertScriptParses(filePath) {
-  const html = fs.readFileSync(filePath, 'utf8');
-  const start = html.indexOf('\n<script>\n');
-  const end = html.lastIndexOf('\n</script>\n');
-  if (start === -1 || end === -1) throw new Error('找不到 <script> 區塊');
-  const tmp = path.join(ROOT, '.check-jobs-syntax.tmp.js');
-  fs.writeFileSync(tmp, html.slice(start + '\n<script>\n'.length, end));
-  try {
-    execFileSync(process.execPath, ['--check', tmp], { stdio: 'pipe' });
-  } finally {
-    fs.unlinkSync(tmp);
-  }
+  execFileSync(process.execPath, ['--check', filePath], { stdio: 'pipe' });
 }
 
 // ---------- 主流程 ----------
@@ -197,9 +191,9 @@ if (DRY) {
     assertScriptParses(FILE);
   } catch (err) {
     fs.writeFileSync(FILE, original);
-    console.error('\n✗ 改寫後的 <script> 無法通過 node --check，已還原 index.html：');
+    console.error('\n✗ 改寫後的 data/jobs.js 無法通過 node --check，已還原：');
     console.error(String(err.stderr || err.message).trim());
     process.exit(1);
   }
-  console.log('\n✓ index.html 已更新。');
+  console.log('\n✓ data/jobs.js 已更新。');
 }

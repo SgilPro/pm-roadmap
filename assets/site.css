@@ -1,0 +1,442 @@
+/* pm-roadmap 共用樣式。index.html（求職）與 roadmap.html（能力框架）都 <link> 這一份。
+   一份不拆三份：兩個頁面各自載到用不到的規則（.pipeline-* vs .radar-*）沒有成本，
+   拆成 base/jobs/roadmap 三個檔才會開始漂。 */
+  :root {
+    --bg: #f1f5f9;
+    --surface: #ffffff;
+    --surface2: #f8fafc;
+    --border: #e2e8f0;
+    --border2: #cbd5e1;
+    --accent: #4f46e5;
+    --accent2: #0891b2;
+    --accent3: #059669;
+    --accent4: #d97706;
+    --accent5: #dc2626;
+    --text: #0f172a;
+    --muted: #64748b;
+    --you: #7c3aed;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    min-height: 100vh;
+  }
+
+  /* Header */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  header h1 { font-size: 17px; font-weight: 700; color: var(--accent); }
+  header p { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tab {
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    transition: all 0.15s;
+  }
+  .tab.active { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+  .tab:hover:not(.active) { border-color: var(--accent); color: var(--accent); background: rgba(79,70,229,0.05); }
+
+  /* Views */
+  .view { display: none; padding: 28px 32px 60px; max-width: 1400px; margin: 0 auto; }
+  .view.active { display: block; }
+
+  /* === ROADMAP VIEW === */
+  .roadmap-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+  }
+  .phase-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: box-shadow 0.2s, border-color 0.2s;
+  }
+  .phase-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); border-color: var(--border2); }
+  .phase-header {
+    padding: 12px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+  }
+  .phase-icon { font-size: 16px; }
+  .phase-body { padding: 6px 16px 14px; }
+  .skill-group { margin-top: 10px; }
+  .skill-group-title {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 5px;
+  }
+  .skill-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    margin: 2px;
+    cursor: default;
+    border: 1px solid transparent;
+  }
+  .skill-tag.have {
+    background: rgba(124,58,237,0.08);
+    border-color: rgba(124,58,237,0.2);
+    color: var(--you);
+  }
+  .skill-tag.need {
+    background: #f8fafc;
+    border-color: var(--border);
+    color: var(--muted);
+  }
+  .skill-tag.learning {
+    background: rgba(217,119,6,0.08);
+    border-color: rgba(217,119,6,0.25);
+    color: var(--accent4);
+  }
+  .skill-tag.wont {
+    background: #f1f5f9;
+    border-color: var(--border);
+    color: #94a3b8;
+    text-decoration: line-through;
+    opacity: 0.75;
+  }
+
+  .legend {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .legend-dot { width: 10px; height: 10px; border-radius: 3px; }
+
+  /* === SKILLS VIEW === */
+  .skills-table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th {
+    text-align: left;
+    padding: 10px 14px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  td { padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--text); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #fafbff; }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .badge.have { background: rgba(124,58,237,0.1); color: var(--you); }
+  .badge.need { background: #f1f5f9; color: var(--muted); border: 1px solid var(--border); }
+  .badge.partial { background: rgba(217,119,6,0.1); color: var(--accent4); }
+  .badge.wont { background: #f1f5f9; color: #94a3b8; border: 1px solid var(--border); }
+  tr.row-wont { opacity: 0.55; }
+  tr.row-wont td:nth-child(2) { text-decoration: line-through; }
+  .priority-bar { width: 60px; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .priority-fill { height: 100%; border-radius: 3px; }
+
+  /* === JOBS VIEW === */
+  .jobs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 16px;
+  }
+  .job-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    transition: box-shadow 0.2s;
+  }
+  .job-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+  .job-rank {
+    display: inline-block;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    text-align: center;
+    line-height: 26px;
+    margin-bottom: 10px;
+  }
+  .job-title { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+  .job-company { font-size: 13px; color: var(--accent2); margin-bottom: 6px; }
+  .job-meta { font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+  .job-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
+  .job-tag {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    background: #f1f5f9;
+    border: 1px solid var(--border);
+    color: var(--muted);
+  }
+  .job-link {
+    display: inline-block;
+    padding: 6px 14px;
+    background: var(--accent);
+    color: #fff;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: opacity 0.2s;
+  }
+  .job-link:hover { opacity: 0.85; }
+  .match-score { float: right; font-size: 22px; font-weight: 800; color: var(--accent3); }
+
+  /* Readiness panel */
+  .readiness-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+  }
+  .readiness-title { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+  .readiness-sub { font-size: 12px; color: var(--muted); margin-bottom: 16px; }
+  .readiness-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; margin-bottom: 16px; }
+  .readiness-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+  }
+  .readiness-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  .readiness-label { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+  .readiness-note { font-size: 11px; color: var(--muted); line-height: 1.5; }
+  .readiness-verdict {
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  .verdict-not-ready { background: rgba(220,38,38,0.06); border: 1px solid rgba(220,38,38,0.2); color: #7f1d1d; }
+  .verdict-partial { background: rgba(217,119,6,0.06); border: 1px solid rgba(217,119,6,0.2); color: #78350f; }
+
+  /* Section title */
+  .section-title { font-size: 19px; font-weight: 700; margin-bottom: 6px; color: var(--text); }
+  .section-sub { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+
+  /* Progress stats */
+  .progress-overview {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  .progress-stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+  }
+  .progress-stat .num { font-size: 26px; font-weight: 800; }
+  .progress-stat .label { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  /* Pipeline — the North Star. Deliberately the largest numbers on the page. */
+  .pipeline-panel { margin-bottom: 24px; }
+  .pipeline-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 10px;
+  }
+  .pipeline-stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 16px;
+    text-align: center;
+  }
+  .pipeline-stat.offer { border-color: rgba(5,150,105,0.35); background: rgba(5,150,105,0.04); }
+  .pipeline-stat .num { font-size: 46px; font-weight: 800; line-height: 1.05; color: var(--accent3); }
+  .pipeline-stat.offer .num { color: #059669; }
+  .pipeline-stat.zero .num { color: #cbd5e1; }
+  .pipeline-stat .label { font-size: 12px; color: var(--muted); margin-top: 6px; font-weight: 600; }
+  .pipeline-foot { font-size: 11px; color: var(--muted); margin-top: 10px; }
+
+  /* Runway — leading indicator with a hard expiry (2026-11-16). See renderRunway(). */
+  .runway { margin-top: 12px; padding: 12px 14px; border-radius: 8px;
+            border: 1px solid var(--border); background: var(--surface);
+            font-size: 12.5px; line-height: 1.7; color: var(--muted); }
+  .runway strong { color: var(--fg); }
+  .runway .runway-count { font-weight: 700; color: var(--accent4); }
+  .runway.overdue { border-color: rgba(220,38,38,0.35); background: rgba(220,38,38,0.05);
+                    color: var(--accent5); font-weight: 600; }
+
+  /* North-star strip — roadmap.html 專用。這一頁全部是 input metric，所以結果指標
+     必須固定掛在頂端。數字由 data/pipeline.js 的 runwayState() 推導，沒有硬編碼。
+     拆頁把「看技能進度就會看到 applied: 0」這個約束拆掉了，這條 strip 是把它裝回去。 */
+  .northstar {
+    display: flex; align-items: baseline; gap: 10px 18px; flex-wrap: wrap;
+    margin-bottom: 20px; padding: 12px 14px; border-radius: 10px;
+    border: 1px solid var(--border); background: var(--surface);
+    font-size: 12.5px; line-height: 1.7; color: var(--muted);
+  }
+  .northstar .ns-nums { font-size: 13px; color: var(--fg); font-weight: 600; }
+  .northstar .ns-nums b { font-size: 19px; font-weight: 800; color: var(--accent3); }
+  .northstar .ns-nums b.zero { color: #cbd5e1; }
+  .northstar .ns-note { flex-basis: 100%; font-size: 11.5px; }
+  .northstar .ns-link { margin-left: auto; font-size: 12px; font-weight: 600;
+                        color: var(--accent); text-decoration: none; white-space: nowrap; }
+  .northstar .ns-link:hover { text-decoration: underline; }
+  .northstar.overdue { border-color: rgba(220,38,38,0.35); background: rgba(220,38,38,0.05); }
+  .northstar.overdue .ns-note { color: var(--accent5); font-weight: 600; }
+
+  /* 跨頁連結，兩個 header 都用 */
+  .page-link { font-size: 12px; font-weight: 600; color: var(--accent);
+               text-decoration: none; white-space: nowrap; }
+  .page-link:hover { text-decoration: underline; }
+
+  /* Deliberately-not-learning panel */
+  .wont-panel { margin-top: 28px; }
+  /* One row per item. Do NOT reuse .tree-skills here — it is a multi-column grid. */
+  .wont-list { padding: 4px 0 6px; }
+  .wont-item { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px;
+               padding: 10px 16px; border-top: 1px solid var(--border); font-size: 12px; }
+  .wont-item:first-child { border-top: none; }
+  .wont-name { flex: 0 0 180px; min-width: 0; font-weight: 600; color: #64748b; text-decoration: line-through; }
+  .wont-reason { flex: 1 1 320px; min-width: 0; color: var(--muted); line-height: 1.6; }
+  .wont-detail { margin-top: 6px; color: #94a3b8; line-height: 1.7; font-size: 11.5px; }
+  .wont-detail summary { cursor: pointer; color: var(--accent3); font-size: 11px; }
+  .wont-src { flex: 0 0 auto; margin-left: auto; font-size: 10px; color: #cbd5e1; white-space: nowrap; }
+
+  /* Job freshness + PDM exposure */
+  .jobs-checked { font-size: 12px; color: var(--muted); margin-bottom: 16px; }
+  .jobs-checked.stale { color: var(--accent4); font-weight: 600; }
+  .apply-gap { font-size: 13px; font-weight: 600; color: var(--accent5); margin: -8px 0 16px;
+               padding: 10px 14px; border-left: 3px solid var(--accent5);
+               background: rgba(220,38,38,0.05); border-radius: 0 6px 6px 0; }
+  .pdm-badge { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 4px; }
+  .pdm-badge.high { background: rgba(5,150,105,0.12); color: #059669; }
+  .pdm-badge.mid { background: rgba(217,119,6,0.12); color: var(--accent4); }
+  .pdm-badge.low { background: #f1f5f9; color: var(--muted); }
+  .health-badge { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 4px; }
+  .health-badge.closed { background: rgba(220,38,38,0.10); color: var(--accent5); }
+  .health-badge.unknown { background: #f1f5f9; color: var(--muted); border: 1px solid var(--border); }
+  /* Dead listing: kept on the page as evidence of shelf life, but visibly out of the running. */
+  .job-closed { opacity: 0.5; }
+  .job-closed .job-title { text-decoration: line-through; }
+  .job-closed .job-link { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
+
+  /* Portfolio */
+  .tier-btn {
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    transition: all 0.15s;
+  }
+  .tier-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+  .tier-btn:hover:not(.active) { border-color: var(--accent); color: var(--accent); }
+
+  .portfolio-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; max-width: 900px; }
+  @media (max-width: 600px) { .portfolio-grid { grid-template-columns: 1fr; } }
+  .portfolio-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 22px;
+    text-decoration: none;
+    display: block;
+    transition: box-shadow 0.2s, border-color 0.2s;
+  }
+  .portfolio-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+  .portfolio-card.card-a:hover { border-color: var(--accent); }
+  .portfolio-card.card-b:hover { border-color: var(--accent2); }
+  .portfolio-eyebrow { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+  .portfolio-name { font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .portfolio-sub { font-size: 13px; color: var(--muted); margin-bottom: 12px; }
+  .portfolio-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 14px; }
+  .portfolio-tag-a { background: rgba(79,70,229,0.08); color: var(--accent); border: 1px solid rgba(79,70,229,0.2); padding: 2px 8px; border-radius: 4px; font-size: 11px; }
+  .portfolio-tag-b { background: rgba(8,145,178,0.08); color: var(--accent2); border: 1px solid rgba(8,145,178,0.2); padding: 2px 8px; border-radius: 4px; font-size: 11px; }
+  .portfolio-desc { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 14px; }
+  .portfolio-link-a { font-size: 13px; color: var(--accent); font-weight: 600; }
+  .portfolio-link-b { font-size: 13px; color: var(--accent2); font-weight: 600; }
+  /* RADAR VIEW */
+  .radar-layout { display: flex; gap: 28px; flex-wrap: wrap; align-items: flex-start; justify-content: center; margin-top: 8px; }
+  .radar-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; }
+  .radar-card-title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+  .radar-card-hint { font-size: 12px; color: var(--muted); margin-bottom: 16px; }
+  .radar-legend { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 14px; }
+  .radar-legend-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--muted); }
+  .radar-legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+  /* SUB-TABS (技能圖譜 三 views) */
+  .sub-tabs { display:flex; gap:0; margin-bottom:20px; border-bottom:1px solid var(--border); }
+  .sub-tab { padding:7px 16px; font-size:13px; cursor:pointer; border:none; border-bottom:2px solid transparent; margin-bottom:-1px; background:transparent; color:var(--muted); transition:all 0.15s; }
+  .sub-tab.active { color:var(--accent); border-bottom-color:var(--accent); font-weight:600; }
+  .sub-tab:hover:not(.active) { color:var(--text); }
+  .sub-view { display:none; }
+  .sub-view.active { display:block; }
+  /* SNAPSHOT BAR */
+  .snapshot-bar { display:flex; align-items:center; gap:6px; }
+  .snapshot-bar select { font-size:12px; padding:3px 8px; border:1px solid var(--border); border-radius:5px; background:var(--surface); color:var(--text); cursor:pointer; }
+  /* SKILL TREE */
+  .tree-cat { background:var(--surface); border:1px solid var(--border); border-radius:10px; margin-bottom:10px; overflow:hidden; }
+  .tree-cat-header { display:flex; align-items:center; gap:10px; padding:12px 16px; cursor:pointer; user-select:none; background:var(--surface2); }
+  .tree-cat-header:hover { background:#eef2f8; }
+  .tree-toggle { font-size:13px; color:var(--muted); width:14px; display:inline-block; }
+  .tree-cat-name { font-size:13px; font-weight:700; flex:1; }
+  .tree-cat-stats { font-size:11px; color:var(--muted); }
+  .tree-cat-bar { width:80px; height:4px; background:var(--border); border-radius:2px; overflow:hidden; }
+  .tree-cat-bar-fill { height:100%; border-radius:2px; background:var(--accent3); }
+  .tree-skills { padding:10px 16px 14px; display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:4px; }
+  .tree-skill { display:flex; align-items:center; gap:8px; padding:5px 8px; border-radius:6px; }
+  .tree-skill:hover { background:var(--surface2); }
+  .tree-skill-icon { font-size:11px; font-weight:700; width:18px; text-align:center; }
+  .tree-skill-icon.have { color:#059669; }
+  .tree-skill-icon.partial { color:#d97706; }
+  .tree-skill-icon.need { color:#94a3b8; }
+  .tree-skill-icon.wont { color:#cbd5e1; }
+  .tree-skill.wont .tree-skill-name { text-decoration: line-through; color:#94a3b8; }
+  .tree-skill-name { font-size:13px; flex:1; }
+  .tree-skill-prio { font-size:10px; color:var(--muted); background:var(--bg); border:1px solid var(--border); border-radius:3px; padding:1px 5px; }
+  .social-badge { font-size:10px; font-weight:600; padding:1px 5px; border-radius:3px; white-space:nowrap; }
+  .social-badge.high { color:#065f46; background:#d1fae5; border:1px solid #6ee7b7; }
+  .social-badge.mid { color:#92400e; background:#fef3c7; border:1px solid #fcd34d; }

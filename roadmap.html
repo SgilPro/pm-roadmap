@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PM 能力 Roadmap — jobshih</title>
+<link rel="stylesheet" href="assets/site.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<!-- 資料檔全部是傳統 <script src>，不可改成 type="module"——ES module 在 file:// 下被
+     CORS 擋掉，直接開這個檔就會壞。載入順序有意義：pipeline.js 的 runwayState() 讀
+     budget.js 的 BUDGET，所以 budget 必須在前面。 -->
+<script src="data/budget.js"></script>
+<script src="data/pipeline.js"></script>
+<script src="data/roadmap.js"></script>
+<script src="data/skills.js"></script>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>PM 能力 Roadmap</h1>
+    <p>能力地圖、技能圖譜、刻意不學清單 · 全部是 input metric，不是結果</p>
+  </div>
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('roadmap')">Roadmap</button>
+    <button class="tab" onclick="switchTab('skills')">技能圖譜</button>
+    <a class="page-link" href="index.html" style="align-self:center;margin-left:6px">← 求職</a>
+  </div>
+</header>
+
+<!-- 結果指標 strip。內容由 renderNorthStarStrip() 推導——不要在這裡寫死任何數字。 -->
+<div class="northstar" id="northstar"></div>
+
+<!-- ========== ROADMAP TAB ========== -->
+<div class="view active" id="view-roadmap">
+  <div class="section-title">PM 能力 Roadmap</div>
+  <!-- 說法要對得上資料：這個 tab 讀 ROADMAP_DATA，結構是 roadmap.sh 的 12 個 phase。
+       Product Compass 的 8 大能力餵的是「技能圖譜」tab（SKILLS_DATA），兩者不同，不要混寫。 -->
+  <div class="section-sub">結構沿用 roadmap.sh 的 PM roadmap（12 個 phase），標記你目前的能力位置</div>
+
+  <div class="legend">
+    <div class="legend-item">
+      <div class="legend-dot" style="background:rgba(124,58,237,0.4)"></div>
+      已具備
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background:rgba(217,119,6,0.5)"></div>
+      學習中（Phase 1–2）
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background:#e2e8f0"></div>
+      待學習
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background:#cbd5e1"></div>
+      刻意不學
+    </div>
+  </div>
+
+  <div class="roadmap-grid" id="roadmap-grid"></div>
+</div>
+
+<!-- ========== SKILLS TAB (技能圖譜) ========== -->
+<div class="view" id="view-skills">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px">
+    <div>
+      <div class="section-title">技能圖譜</div>
+      <!-- 逐項比對過 Product Compass 的 8 類：前 7 類都有對應，但 Product Growth 整類缺席
+           （PLG、Time to Value、onboarding、pricing 一項都沒有），位置被自加的「技術能力」佔掉。
+           這是已知缺口，不是筆誤——PDM 面試會問，補齊排在 spine 落地那一波。 -->
+      <div class="section-sub">分類沿用 Product Compass 8 大能力，另加技術能力 / AI-Native PM / 轉職敘事三類<span style="color:var(--accent4)">（已知缺口：Product Growth 尚未納入）</span></div>
+      <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+        <span class="social-badge high">✓ 可轉移</span><span style="font-size:12px;color:var(--muted)">社創/LFT 背景直接可轉移，翻譯 PM 語言即可</span>
+        <span class="social-badge mid">△ 部分</span><span style="font-size:12px;color:var(--muted)">相關經驗，需補 PM 框架</span>
+      </div>
+      <div id="completion-note" style="font-size:11px;color:var(--muted)"></div>
+    </div>
+    <div class="snapshot-bar">
+      <span style="font-size:12px;color:var(--muted)">歷史版本：</span>
+      <select id="snapshot-select" onchange="onSnapshotChange()">
+        <option value="current">2026-07-27（目前）</option>
+      </select>
+    </div>
+  </div>
+  <div class="sub-tabs">
+    <button class="sub-tab active" onclick="switchSubTab('list')">清單</button>
+    <button class="sub-tab" onclick="switchSubTab('radar')">雷達</button>
+    <button class="sub-tab" onclick="switchSubTab('tree')">技能樹</button>
+  </div>
+  <!-- ── List sub-view ── -->
+  <div class="sub-view active" id="sub-list">
+    <div class="skills-table-wrap">
+      <table id="skills-table">
+        <thead>
+          <tr>
+            <th>能力分類</th>
+            <th>技能項目</th>
+            <th>狀態</th>
+            <th>優先度</th>
+            <th>說明</th>
+            <th title="社創/LFT背景可轉移程度">社創</th>
+          </tr>
+        </thead>
+        <tbody id="skills-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+  <!-- ── Radar sub-view ── -->
+  <div class="sub-view" id="sub-radar">
+    <div class="radar-layout" style="margin-top:20px">
+      <div class="radar-card">
+        <div class="radar-card-title">能力分類總覽</div>
+        <div class="radar-card-hint">點擊分類名稱或資料點查看細項</div>
+        <canvas id="chart-main" style="max-width:440px;max-height:440px"></canvas>
+        <div class="radar-legend">
+          <div class="radar-legend-item"><div class="radar-legend-dot" style="background:#4f46e5"></div>現有能力</div>
+          <div class="radar-legend-item" style="color:#94a3b8">0% = 待學 · 33% = 部分 · 67% = 學習中 · 100% = 已具備</div>
+        </div>
+      </div>
+      <div class="radar-card" id="radar-sub-card" style="display:none">
+        <div class="radar-card-title" id="sub-radar-title"></div>
+        <div class="radar-card-hint">各技能熟練度</div>
+        <canvas id="chart-sub" style="max-width:380px;max-height:380px"></canvas>
+        <div class="radar-legend" id="sub-legend"></div>
+      </div>
+    </div>
+  </div>
+  <!-- ── Skill Tree sub-view ── -->
+  <div class="sub-view" id="sub-tree">
+    <div id="skill-tree" style="margin-top:8px"></div>
+  </div>
+
+  <!-- Scope cut, made visible on purpose -->
+  <div class="wont-panel" id="wont-panel"></div>
+</div>
+
+<script>
+let activeSnapshotKey = "current";
+
+function getActiveSkillsData() {
+  if (activeSnapshotKey === "current") return SKILLS_DATA;
+  const snap = SKILL_HISTORY.find(s => s.date === activeSnapshotKey);
+  return snap ? snap.data : SKILLS_DATA;
+}
+
+function onSnapshotChange() {
+  activeSnapshotKey = document.getElementById('snapshot-select').value;
+  renderSkills();
+  renderCompletionNote();
+  if (radarInitialized) {
+    renderMainRadar();
+    document.getElementById('radar-sub-card').style.display = 'none';
+  }
+  renderSkillTree();
+}
+
+// ===== SUB-TAB =====
+let radarInitialized = false;
+
+function switchSubTab(name) {
+  document.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.sub-view').forEach(v => v.classList.remove('active'));
+  const btn = document.querySelector(`.sub-tab[onclick="switchSubTab('${name}')"]`);
+  if (btn) btn.classList.add('active');
+  const view = document.getElementById('sub-' + name);
+  if (view) view.classList.add('active');
+  if (name === 'radar' && !radarInitialized) {
+    radarInitialized = true;
+    renderMainRadar();
+  }
+  if (name === 'tree') renderSkillTree();
+}
+
+// ===== RENDER ROADMAP =====
+function renderRoadmap() {
+  const grid = document.getElementById('roadmap-grid');
+  grid.innerHTML = '';
+  ROADMAP_DATA.forEach(phase => {
+    const card = document.createElement('div');
+    card.className = 'phase-card';
+    let groupsHtml = '';
+    phase.groups.forEach(g => {
+      const tagsHtml = g.skills.map(s =>
+        `<span class="skill-tag ${s.status}"${s.reason ? ` title="刻意不學：${s.reason}"` : ''}>${
+          s.status === 'have' ? '✓ ' : s.status === 'learning' ? '⟳ ' : s.status === 'wont' ? '✕ ' : ''
+        }${s.name}</span>`
+      ).join('');
+      groupsHtml += `<div class="skill-group">
+        <div class="skill-group-title">${g.name}</div>
+        <div>${tagsHtml}</div>
+      </div>`;
+    });
+    card.innerHTML = `
+      <div class="phase-header" style="background:${phase.color}12;border-bottom:1px solid ${phase.color}25">
+        <span class="phase-icon">${phase.icon}</span>
+        <span style="color:${phase.color}">${phase.title}</span>
+      </div>
+      <div class="phase-body">${groupsHtml}</div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+// ===== RENDER SKILLS =====
+const STATUS_BADGE = {
+  have: '✓ 已具備',
+  partial: '⟳ 部分',
+  need: '○ 待學',
+  wont: '✕ 刻意不學'
+};
+
+function renderSkills() {
+  const tbody = document.getElementById('skills-tbody');
+  const sorted = [...getActiveSkillsData()].sort((a,b) => b.priority - a.priority);
+  tbody.innerHTML = sorted.map(s => {
+    const badgeClass = STATUS_BADGE[s.status] ? s.status : 'need';
+    const badgeLabel = STATUS_BADGE[s.status] || STATUS_BADGE.need;
+    const fillColor = s.status === 'wont' ? '#cbd5e1'
+      : s.priority >= 80 ? '#4f46e5' : s.priority >= 60 ? '#d97706' : '#94a3b8';
+    const note = s.status === 'wont' ? (s.reason || s.note) : s.note;
+    return `<tr class="${s.status === 'wont' ? 'row-wont' : ''}">
+      <td style="color:var(--muted);font-size:11px">${s.cat}</td>
+      <td style="font-weight:500"${s.eval ? ` title="◎ 評估方式：${s.eval}"` : ''}>${s.skill}${s.eval ? ' <span style="font-size:9px;color:var(--muted);opacity:0.7">◎</span>' : ''}</td>
+      <td><span class="badge ${badgeClass}">${badgeLabel}</span></td>
+      <td>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="priority-bar"><div class="priority-fill" style="width:${s.priority}%;background:${fillColor}"></div></div>
+          <span style="font-size:11px;color:var(--muted)">${s.priority}</span>
+        </div>
+      </td>
+      <td style="color:var(--muted);font-size:12px">${note}</td>
+      <td>${s.social === 'high' ? '<span class="social-badge high">✓ 可轉移</span>' : s.social === 'mid' ? '<span class="social-badge mid">△ 部分</span>' : ''}</td>
+    </tr>`;
+  }).join('');
+}
+
+
+// ===== RADAR =====
+function statusScore(s) {
+  return { have: 3, partial: 2, learning: 1, need: 0 }[s] ?? 0;
+}
+
+// "wont" items are excluded from every score — a skill you deliberately skipped
+// must not drag down the number, otherwise the scope cut costs you twice.
+function buildCatGroups() {
+  const cats = {};
+  getActiveSkillsData().forEach(s => {
+    if (s.status === 'wont') return;
+    if (!cats[s.cat]) cats[s.cat] = [];
+    cats[s.cat].push(s);
+  });
+  return Object.entries(cats)
+    .filter(([, skills]) => skills.length > 0)
+    .map(([cat, skills]) => ({
+      cat,
+      score: Math.round(skills.reduce((sum, s) => sum + statusScore(s.status), 0) / skills.length / 3 * 100),
+      skills
+    }));
+}
+
+let mainChart = null, subChart = null, catGroups = null;
+
+function renderMainRadar() {
+  catGroups = buildCatGroups();
+  const ctx = document.getElementById('chart-main').getContext('2d');
+  if (mainChart) mainChart.destroy();
+  mainChart = new Chart(ctx, {
+    type: 'radar',
+    data: {
+      labels: catGroups.map(c => c.cat),
+      datasets: [{
+        label: 'PM 能力',
+        data: catGroups.map(c => c.score),
+        backgroundColor: 'rgba(79,70,229,0.15)',
+        borderColor: 'rgba(79,70,229,0.85)',
+        pointBackgroundColor: 'rgba(79,70,229,0.9)',
+        pointRadius: 5,
+        pointHoverRadius: 8,
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        r: {
+          min: 0, max: 100,
+          ticks: { stepSize: 25, font: { size: 10 }, color: '#94a3b8', backdropColor: 'transparent' },
+          grid: { color: '#e2e8f0' },
+          pointLabels: { font: { size: 12, weight: '600' }, color: '#0f172a' },
+          angleLines: { color: '#e2e8f0' }
+        }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: (c) => ` ${c.raw}%` } }
+      },
+      onClick(event, elements) {
+        if (!elements.length) return;
+        renderSubRadar(catGroups[elements[0].index]);
+      },
+      onHover(event, elements) {
+        event.native.target.style.cursor = elements.length ? 'pointer' : 'default';
+      }
+    }
+  });
+}
+
+function renderSubRadar(catData) {
+  const card = document.getElementById('radar-sub-card');
+  document.getElementById('sub-radar-title').textContent = catData.cat + ' — 細項';
+  card.style.display = 'block';
+
+  const statusLabel = { have: '✓ 已具備', partial: '⟳ 部分', learning: '⟳ 學習中', need: '○ 待學' };
+  const statusColor = { have: '#059669', partial: '#d97706', learning: '#4f46e5', need: '#94a3b8' };
+
+  const labels = catData.skills.map(s => s.skill.length > 14 ? s.skill.slice(0, 14) + '…' : s.skill);
+  const data = catData.skills.map(s => statusScore(s.status) / 3 * 100);
+
+  const ctx = document.getElementById('chart-sub').getContext('2d');
+  if (subChart) subChart.destroy();
+  subChart = new Chart(ctx, {
+    type: 'radar',
+    data: {
+      labels,
+      datasets: [{
+        label: catData.cat,
+        data,
+        backgroundColor: 'rgba(8,145,178,0.15)',
+        borderColor: 'rgba(8,145,178,0.85)',
+        pointBackgroundColor: catData.skills.map(s => statusColor[s.status] || '#94a3b8'),
+        pointRadius: 6,
+        pointHoverRadius: 9,
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        r: {
+          min: 0, max: 100,
+          ticks: { stepSize: 50, font: { size: 10 }, color: '#94a3b8', backdropColor: 'transparent', display: false },
+          grid: { color: '#e2e8f0' },
+          pointLabels: { font: { size: 11 }, color: '#334155' },
+          angleLines: { color: '#e2e8f0' }
+        }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: (c) => {
+              const s = catData.skills[c.dataIndex];
+              return ` ${statusLabel[s.status] || s.status}`;
+            }
+          }
+        }
+      }
+    }
+  });
+
+  const presentStatuses = [...new Set(catData.skills.map(s => s.status))];
+  document.getElementById('sub-legend').innerHTML = presentStatuses.map(k =>
+    `<div class="radar-legend-item"><div class="radar-legend-dot" style="background:${statusColor[k]}"></div>${statusLabel[k]}</div>`
+  ).join('');
+}
+
+// ===== SKILL TREE =====
+function renderSkillTree() {
+  const data = getActiveSkillsData();
+  const cats = {};
+  data.forEach(s => {
+    if (!cats[s.cat]) cats[s.cat] = [];
+    cats[s.cat].push(s);
+  });
+  const statusIcon = { have: '✓', partial: '⟳', need: '○', wont: '✕' };
+  const container = document.getElementById('skill-tree');
+  container.innerHTML = Object.entries(cats).map(([cat, skills]) => {
+    const sorted = [...skills].sort((a, b) => b.priority - a.priority);
+    const counted = skills.filter(s => s.status !== 'wont');
+    const haveCount = counted.filter(s => s.status === 'have').length;
+    const pct = counted.length ? Math.round(haveCount / counted.length * 100) : 0;
+    return `<div class="tree-cat" data-open="true">
+      <div class="tree-cat-header" onclick="toggleCat(this)">
+        <span class="tree-toggle">▾</span>
+        <span class="tree-cat-name">${cat}</span>
+        <span class="tree-cat-stats">${haveCount}/${counted.length} 已具備${skills.length > counted.length ? `（+${skills.length - counted.length} 刻意不學）` : ''}</span>
+        <div class="tree-cat-bar"><div class="tree-cat-bar-fill" style="width:${pct}%"></div></div>
+      </div>
+      <div class="tree-skills cat-body">
+        ${sorted.map(s => `<div class="tree-skill ${s.status === 'wont' ? 'wont' : ''}"${s.reason ? ` title="刻意不學：${s.reason}"` : s.eval ? ` title="◎ 評估方式：${s.eval}"` : ''}>
+          <span class="tree-skill-icon ${s.status}">${statusIcon[s.status] || '○'}</span>
+          <span class="tree-skill-name">${s.skill}${s.eval ? ' <span style="font-size:9px;color:var(--muted);opacity:0.7">◎</span>' : ''}</span>
+          ${s.social === 'high' ? '<span class="social-badge high">社創✓</span>' : s.social === 'mid' ? '<span class="social-badge mid">社創△</span>' : ''}
+          <span class="tree-skill-prio">${s.priority}</span>
+        </div>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleCat(header) {
+  const cat = header.parentElement;
+  const isOpen = cat.dataset.open === 'true';
+  cat.dataset.open = isOpen ? 'false' : 'true';
+  cat.querySelector('.tree-toggle').textContent = isOpen ? '▸' : '▾';
+  cat.querySelector('.cat-body').style.display = isOpen ? 'none' : '';
+}
+
+
+// ===== COMPLETION (input metric — deliberately demoted) =====
+function calcCompletion() {
+  const counted = getActiveSkillsData().filter(s => s.status !== 'wont');
+  if (!counted.length) return { pct: 0, have: 0, partial: 0, need: 0, total: 0 };
+  const have = counted.filter(s => s.status === 'have').length;
+  const partial = counted.filter(s => s.status === 'partial').length;
+  return {
+    pct: Math.round((have + partial * 0.5) / counted.length * 100),
+    have, partial,
+    need: counted.length - have - partial,
+    total: counted.length
+  };
+}
+
+function renderCompletionNote() {
+  const c = calcCompletion();
+  const wont = getActiveSkillsData().filter(s => s.status === 'wont').length;
+  document.getElementById('completion-note').textContent =
+    `完成度 ${c.pct}%（${c.have} 已具備 / ${c.partial} 部分 / ${c.need} 待學，共 ${c.total} 項；`
+    + `另有 ${wont} 項刻意不學，不計入）— input metric，非目標。`;
+}
+
+// ===== DELIBERATELY NOT LEARNING =====
+// Scans both data sources and dedupes by concept, because Five Forces lives in
+// ROADMAP_DATA ("Five Forces Analysis") and SKILLS_DATA ("Porter's Five Forces").
+const WONT_ALIASES = { "Five Forces Analysis": "Five Forces", "Porter's Five Forces": "Five Forces" };
+
+function collectWont() {
+  const byKey = new Map();
+  const add = (name, cat, item) => {
+    const key = WONT_ALIASES[name] || name;
+    const existing = byKey.get(key);
+    if (existing) {
+      if (!existing.cats.includes(cat)) existing.cats.push(cat);
+      if (!existing.reasonDetail && item.reasonDetail) existing.reasonDetail = item.reasonDetail;
+      return;
+    }
+    byKey.set(key, { name: key, cats: [cat], reason: item.reason || '{{TBD}}', reasonDetail: item.reasonDetail });
+  };
+  ROADMAP_DATA.forEach(phase => phase.groups.forEach(g => g.skills.forEach(s => {
+    if (s.status === 'wont') add(s.name, phase.title, s);
+  })));
+  SKILLS_DATA.forEach(s => { if (s.status === 'wont') add(s.skill, s.cat, s); });
+  return [...byKey.values()];
+}
+
+function renderWontList() {
+  const items = collectWont();
+  document.getElementById('wont-panel').innerHTML = `
+    <div class="tree-cat" data-open="true">
+      <div class="tree-cat-header" onclick="toggleWont(this)">
+        <span class="tree-toggle">▾</span>
+        <span class="tree-cat-name">刻意不學 ${items.length} 項，理由如下</span>
+        <span class="tree-cat-stats">scope cut — 不計入完成度</span>
+      </div>
+      <div class="wont-list cat-body">
+        ${items.map(w => `<div class="wont-item">
+          <div class="wont-name">${w.name}</div>
+          <div class="wont-reason">${w.reason}${
+            w.reasonDetail ? `<details class="wont-detail"><summary>展開完整理由</summary>${w.reasonDetail}</details>` : ''
+          }</div>
+          <div class="wont-src">${w.cats.join(' · ')}</div>
+        </div>`).join('')}
+      </div>
+    </div>`;
+}
+
+function toggleWont(header) { toggleCat(header); }
+
+
+// ===== NORTH-STAR STRIP =====
+// 這一頁全部是 input metric，所以結果指標固定掛在頂端。三個數字讀 PIPELINE_DATA，
+// 倒數與產出計數走 runwayState()——與求職頁同一套到期邏輯，沒有第二份日期。
+//
+// ⚠️ 這條 strip 是刻意的約束。拆頁之前，看技能進度必然會看到 applied: 0（Pipeline 就在
+//    同一個 tab 裡）；拆完就不會了，而「維護工具的手感很像在前進」正是這個 repo 的失敗模式。
+//    不要因為它礙眼就拿掉——礙眼是它的功能。
+function renderNorthStarStrip() {
+  const el = document.getElementById('northstar');
+  const st = runwayState();
+  const num = (n) => `<b class="${n === 0 ? 'zero' : ''}">${n}</b>`;
+
+  const nums = `<span class="ns-nums">投遞 ${num(PIPELINE_DATA.applied)}`
+    + ` · 面試 ${num(PIPELINE_DATA.interview)}`
+    + ` · offer ${num(PIPELINE_DATA.offer)}</span>`;
+
+  let mid = '', note = '';
+  if (st.phase === 'counting') {
+    mid = `距第一波投遞（<strong>${APPLY_DATE}</strong>）還有 <strong>${st.left}</strong> 天`
+        + ` · 已交 <strong>${st.done}/${st.total}</strong> 份過 rubric 的產出物`;
+    note = '這一頁全部是 input metric。把格子從 need 改成 have，不會讓左邊那三個數字動。';
+  } else if (st.phase === 'overdue') {
+    mid = `投遞日（<strong>${APPLY_DATE}</strong>）已過 <strong>${-st.left}</strong> 天`
+        + ` · 產出物交了 <strong>${st.done}/${st.total}</strong>`;
+    note = '投遞日過了而投遞數還是 0。如果你正在看這一頁，那就是問題本身。';
+  } else {
+    mid = `已開始投遞 · 產出物 <strong>${st.done}/${st.total}</strong>`;
+    note = '投遞已啟動，結果指標回到求職頁。這一頁仍然是 input metric。';
+  }
+
+  el.className = 'northstar' + (st.phase === 'overdue' ? ' overdue' : '');
+  el.innerHTML = nums + `<span>${mid}</span>`
+    + `<a class="ns-link" href="index.html">求職頁 →</a>`
+    + `<span class="ns-note">${note}</span>`;
+}
+
+// ===== TAB SWITCH =====
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('view-' + name).classList.add('active');
+}
+
+// ===== INIT =====
+// Populate snapshot dropdown with history if any
+(function() {
+  const sel = document.getElementById('snapshot-select');
+  SKILL_HISTORY.forEach(snap => {
+    const opt = document.createElement('option');
+    opt.value = snap.date;
+    opt.textContent = snap.label || snap.date;
+    sel.appendChild(opt);
+  });
+})();
+
+renderNorthStarStrip();
+renderRoadmap();
+renderSkills();
+renderCompletionNote();
+renderWontList();
+</script>
+</body>
+</html>

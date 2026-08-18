@@ -14,7 +14,7 @@
 //   沒有這份 id 清單，那個欄位就是自由文字，Phase 2 建 spine 時得回頭改每一支 rubric。
 //   先把詞彙表釘死，成本 40 行，省掉一次回頭。
 //
-// 未來從 index.html 載入時，必須用傳統 <script src>，不可用 type="module"——
+// 未來從 roadmap.html 載入時，必須用傳統 <script src>，不可用 type="module"——
 // ES module 在 file:// 下會被 CORS 擋掉，而這個站的驗證方式就是直接 open index.html。
 //
 // ── 骨架來源 ──────────────────────────────────────────────────────────
