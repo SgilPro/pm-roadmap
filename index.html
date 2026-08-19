@@ -28,7 +28,9 @@
 </header>
 
 <!-- 北極星。刻意擺在 tab bar **之上**——它不是某個 tab 的內容，是這一頁的前提。
-     （拆頁前它被關在 Roadmap tab 裡面，要看投遞數字得先點進能力地圖。） -->
+     （拆頁前它被關在 Roadmap tab 裡面，要看投遞數字得先點進能力地圖。）
+     .page-top 提供左右留白與 max-width——.view 之外的區塊拿不到那些，見 site.css。 -->
+<div class="page-top">
   <!-- North Star: outcome metrics. Everything else on this page is an input metric. -->
   <div class="pipeline-panel">
     <div class="section-title">求職 Pipeline</div>
@@ -41,11 +43,10 @@
          上面那排 0 不准被藏起來。 -->
     <div class="runway" id="runway"></div>
   </div>
-
-  <div class="section-title" style="margin-top:32px">PM 能力 Roadmap</div>
+</div>
 
 <!-- ========== JOBS TAB ========== -->
-<div class="view" id="view-jobs">
+<div class="view active" id="view-jobs">
   <div class="section-title">第一波推薦職缺</div>
   <div class="section-sub">依背景匹配度排序，主推那批作為試水溫投遞</div>
   <div class="jobs-checked" id="jobs-checked"></div>

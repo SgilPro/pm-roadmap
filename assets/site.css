@@ -55,6 +55,13 @@
 
   /* Views */
   .view { display: none; padding: 28px 32px 60px; max-width: 1400px; margin: 0 auto; }
+
+  /* tab bar **之上**的區塊：求職頁的 Pipeline、框架頁的 north-star strip。
+     頁面的左右留白與 max-width 本來全掛在 .view 上，而這些區塊刻意在 .view 之外
+     （它們不屬於任何 tab），所以必須共用同一組值。
+     ⚠️ 改 .view 的 padding / max-width 時要一起改這裡，否則上下兩半會對不齊。 */
+  .page-top { padding: 28px 32px 0; max-width: 1400px; margin: 0 auto; }
+  .page-top > *:last-child { margin-bottom: 0; }   /* 下方 .view 自己有 padding-top，不要疊 */
   .view.active { display: block; }
 
   /* === ROADMAP VIEW === */
@@ -318,13 +325,22 @@
   }
   .northstar .ns-nums { font-size: 13px; color: var(--fg); font-weight: 600; }
   .northstar .ns-nums b { font-size: 19px; font-weight: 800; color: var(--accent3); }
-  .northstar .ns-nums b.zero { color: #cbd5e1; }
+  /* strip 上的 0 **不能**沿用 .pipeline-stat.zero 那個近白色。那邊的數字 46px，
+     淡灰讀得出來；這裡只有 19px，淡灰等於看不見——而這條 strip 的功能就是讓那幾個 0
+     難以忽略。要讓它不舒服，不是讓它安靜。 */
+  .northstar .ns-nums b.zero { color: var(--muted); }
   .northstar .ns-note { flex-basis: 100%; font-size: 11.5px; }
   .northstar .ns-link { margin-left: auto; font-size: 12px; font-weight: 600;
                         color: var(--accent); text-decoration: none; white-space: nowrap; }
   .northstar .ns-link:hover { text-decoration: underline; }
   .northstar.overdue { border-color: rgba(220,38,38,0.35); background: rgba(220,38,38,0.05); }
   .northstar.overdue .ns-note { color: var(--accent5); font-weight: 600; }
+  /* 窄螢幕：margin-left:auto 會把連結推到自己一整行的最右邊，留下一條看起來像空白的列。
+     窄的時候讓它跟在倒數後面就好。 */
+  @media (max-width: 720px) {
+    .northstar { gap: 6px 12px; }
+    .northstar .ns-link { margin-left: 0; }
+  }
 
   /* 跨頁連結，兩個 header 都用 */
   .page-link { font-size: 12px; font-weight: 600; color: var(--accent);
