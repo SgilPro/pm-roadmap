@@ -9,10 +9,11 @@
 <!-- 資料檔全部是傳統 <script src>，不可改成 type="module"——ES module 在 file:// 下被
      CORS 擋掉，直接開這個檔就會壞。載入順序有意義：pipeline.js 的 runwayState() 讀
      budget.js 的 BUDGET，所以 budget 必須在前面。 -->
-<script src="data/budget.js"></script>
-<script src="data/pipeline.js"></script>
-<script src="data/roadmap.js"></script>
-<script src="data/skills.js"></script>
+<script src="profile/budget.js"></script>
+<script src="job-search/pipeline.js"></script>
+<script src="framework/competencies.js"></script>
+<script src="profile/assessment.js"></script>
+<script src="profile/history.js"></script>
 </head>
 <body>
 
@@ -37,8 +38,10 @@
 <!-- ========== ROADMAP TAB ========== -->
 <div class="view active" id="view-roadmap">
   <div class="section-title">PM 能力 Roadmap</div>
-  <!-- 說法要對得上資料：這個 tab 讀 ROADMAP_DATA，結構是 roadmap.sh 的 12 個 phase。
-       Product Compass 的 8 大能力餵的是「技能圖譜」tab（SKILLS_DATA），兩者不同，不要混寫。 -->
+  <!-- 這個 tab 讀 roadmapView(ASSESSMENT)，結構是 roadmap.sh 的 12 個 phase。
+       技能圖譜 tab 讀 skillsView(ASSESSMENT)，用 Product Compass 的分類當軸。
+       ⚠️ 兩者現在是**同一份 framework/competencies.js + profile/assessment.js 的兩個視圖**，
+          狀態只有一份。合併前它們是兩份各自帶 status 的資料，改一邊不會動另一邊。 -->
   <div class="section-sub">結構沿用 roadmap.sh 的 PM roadmap（12 個 phase），標記你目前的能力位置</div>
 
   <div class="legend">
@@ -141,9 +144,11 @@
 let activeSnapshotKey = "current";
 
 function getActiveSkillsData() {
-  if (activeSnapshotKey === "current") return SKILLS_DATA;
+  // 現況從 spine + 我的自評衍生；歷史快照是合併前的扁平格式，直接回傳。
+  // 兩者欄位相同，所以下游三個 sub-view 一行都不用改。
+  if (activeSnapshotKey === "current") return skillsView(ASSESSMENT);
   const snap = SKILL_HISTORY.find(s => s.date === activeSnapshotKey);
-  return snap ? snap.data : SKILLS_DATA;
+  return snap ? snap.data : skillsView(ASSESSMENT);
 }
 
 function onSnapshotChange() {
@@ -178,7 +183,7 @@ function switchSubTab(name) {
 function renderRoadmap() {
   const grid = document.getElementById('roadmap-grid');
   grid.innerHTML = '';
-  ROADMAP_DATA.forEach(phase => {
+  roadmapView(ASSESSMENT).forEach(phase => {
     const card = document.createElement('div');
     card.className = 'phase-card';
     let groupsHtml = '';
@@ -432,7 +437,8 @@ function renderCompletionNote() {
 
 // ===== DELIBERATELY NOT LEARNING =====
 // Scans both data sources and dedupes by concept, because Five Forces lives in
-// ROADMAP_DATA ("Five Forces Analysis") and SKILLS_DATA ("Porter's Five Forces").
+// the curriculum view ("Five Forces Analysis") and the skills view ("Porter's Five Forces").
+// 名稱不同是顯示層的事——狀態早就只有 profile/assessment.js 一份了。
 const WONT_ALIASES = { "Five Forces Analysis": "Five Forces", "Porter's Five Forces": "Five Forces" };
 
 function collectWont() {
@@ -447,10 +453,10 @@ function collectWont() {
     }
     byKey.set(key, { name: key, cats: [cat], reason: item.reason || '{{TBD}}', reasonDetail: item.reasonDetail });
   };
-  ROADMAP_DATA.forEach(phase => phase.groups.forEach(g => g.skills.forEach(s => {
+  roadmapView(ASSESSMENT).forEach(phase => phase.groups.forEach(g => g.skills.forEach(s => {
     if (s.status === 'wont') add(s.name, phase.title, s);
   })));
-  SKILLS_DATA.forEach(s => { if (s.status === 'wont') add(s.skill, s.cat, s); });
+  skillsView(ASSESSMENT).forEach(s => { if (s.status === 'wont') add(s.skill, s.cat, s); });
   return [...byKey.values()];
 }
 
@@ -477,6 +483,32 @@ function renderWontList() {
 
 function toggleWont(header) { toggleCat(header); }
 
+
+// ===== 缺檔守衛 =====
+// 三層架構的代價：載入的檔案變多，少一個就可能整頁空白——而白頁不會告訴你為什麼。
+// 別人 clone 這個框架時最可能踩的就是這個（例如沒跑 init、或刪掉了某個 profile 檔）。
+// 所以缺什麼就在畫面上講出來，不要靜默失敗。
+(function guardMissingData() {
+  // ⚠️ 必須用 `typeof X` 逐個寫死，不能跑迴圈查 window[name]——
+  //    `const` 宣告的頂層變數是**語彙綁定**，不會變成 window 的屬性，
+  //    所以 window['ITEMS'] 永遠是 undefined，即使 ITEMS 好好地存在。
+  //    第一版就是這樣寫的，結果正常頁面也被判定缺 5 個檔、整頁變白。
+  const need = [];
+  if (typeof ITEMS === 'undefined')         need.push(['ITEMS', 'framework/competencies.js']);
+  if (typeof ASSESSMENT === 'undefined')    need.push(['ASSESSMENT', 'profile/assessment.js']);
+  if (typeof SKILL_HISTORY === 'undefined') need.push(['SKILL_HISTORY', 'profile/history.js']);
+  if (typeof BUDGET === 'undefined')        need.push(['BUDGET', 'profile/budget.js']);
+  if (typeof PIPELINE_DATA === 'undefined') need.push(['PIPELINE_DATA', 'job-search/pipeline.js']);
+  if (!need.length) return;
+  document.body.insertAdjacentHTML('afterbegin',
+    `<div style="margin:24px 32px;padding:16px 18px;border:1px solid rgba(220,38,38,0.35);
+       border-radius:10px;background:rgba(220,38,38,0.06);font-size:13px;line-height:1.8">
+       <strong>缺少 ${need.length} 個資料檔，這一頁沒辦法完整顯示。</strong><br>
+       ${need.map(([n, f]) => `<code>${f}</code>（提供 <code>${n}</code>）`).join('<br>')}
+       <br><br>還沒初始化的話跑一次：<code>node scripts/init.mjs</code>
+     </div>`);
+  throw new Error('缺少資料檔：' + need.map(x => x[1]).join(', '));
+})();
 
 // ===== NORTH-STAR STRIP =====
 // 這一頁全部是 input metric，所以結果指標固定掛在頂端。三個數字讀 PIPELINE_DATA，

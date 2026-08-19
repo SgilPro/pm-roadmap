@@ -9,9 +9,9 @@
      所以求職頁離線也能開——結果指標不該依賴 CDN 活著。
      資料檔全部是傳統 <script src>，不可改成 type="module"（ES module 在 file:// 下
      被 CORS 擋掉）。載入順序有意義：pipeline.js 的 runwayState() 讀 budget.js 的 BUDGET。 -->
-<script src="data/budget.js"></script>
-<script src="data/pipeline.js"></script>
-<script src="data/jobs.js"></script>
+<script src="profile/budget.js"></script>
+<script src="job-search/pipeline.js"></script>
+<script src="job-search/jobs.js"></script>
 </head>
 <body>
 
@@ -202,7 +202,7 @@ function weeklyAttrition() {
   return 1 - Math.pow(survived, 1 / weeks);   // 每週流失比例
 }
 
-// 準備期的 leading indicator。狀態機在 data/pipeline.js 的 runwayState()——
+// 準備期的 leading indicator。狀態機在 job-search/pipeline.js 的 runwayState()——
 // 框架頁的 strip 讀同一支，所以「還剩幾天／交了幾份／過期了沒」不會有兩份日期。
 function renderRunway() {
   const el = document.getElementById('runway');

@@ -2,6 +2,16 @@
 
 前端工程師轉軟體 PM 的求職追蹤站，外加一套正在長出來的產品力養成框架。GitHub Pages 靜態站，無 build step、無後端、無相依套件。
 
+**三層資料，判準是「擁有權」不是主題（2026-08-19 建立）：**
+
+| 目錄 | 是什麼 | 誰的 |
+|---|---|---|
+| `framework/` | **框架本體**：16 個 L1 competency、121 個項目、學習路徑結構、空白範本 | 可打包給別人 clone。**沒有任何一個人的自評** |
+| `profile/` | **我的框架套用**：自評狀態、6 點預算、版本快照 | 我的 |
+| `job-search/` | **我的求職追蹤**：Pipeline、職缺清單 | 我的 |
+
+別人 clone 後跑 `node scripts/init.mjs`：從 `framework/templates/` 複製空白檔到 `profile/` 與 `job-search/`。無 server、無登入、無資料庫——資料就是 repo 裡的幾個 `.js`。**init 不會覆蓋既有檔案**（要覆蓋得加 `--force`）。
+
 **兩個頁面，兩條線，2026-08-19 分家：**
 
 | 頁面 | 是什麼 | 指標性質 |
@@ -22,9 +32,15 @@
 | `index.html` | 求職頁。**無任何外部依賴**（Chart.js 只有 `roadmap.html` 需要），離線可開 |
 | `roadmap.html` | 能力框架頁。載 Chart.js CDN 畫雷達 |
 | `assets/site.css` | 兩頁共用的全部樣式。**一份不拆三份**——拆了才會漂 |
-| `data/*.js` | 全部資料常數，見下表。傳統 `<script src>` 載入 |
+| `framework/competencies.js` | 能力骨架 + 121 個項目 + `CURRICULUM` + 衍生視圖函式 |
+| `framework/templates/*.js` | 空白範本，`init.mjs` 用 |
+| `profile/{assessment,budget,history}.js` | 我的自評、預算、快照 |
+| `job-search/{pipeline,jobs}.js` | 我的求職資料。**`jobs.js` 是 CI 唯一寫入的檔** |
+| `scripts/init.mjs` | 初始化（複製範本） |
+| `scripts/validate-data.mjs` | 十條跨層完整性檢查 |
+| `scripts/{migrate-spine,build-layers}.mjs` | 一次性遷移，留著讓分類決策可被審核與重跑 |
 | `portfolio/linkju.html`、`portfolio/voipark.html` | 兩份 PM case study |
-| `scripts/check-jobs.mjs` | 職缺連結核對器（無相依套件，Node 18+）。**寫入 `data/jobs.js`，不碰 `index.html`** |
+| `scripts/check-jobs.mjs` | 職缺連結核對器（無相依套件，Node 18+）。**寫入 `job-search/jobs.js`** |
 | `.github/workflows/check-jobs.yml` | 每週一跑上面那支，有變更就自動 commit |
 | `docs/mentor-handoff.md` | 改版任務單與診斷（活文件） |
 | `docs/user-interviews/` | 訪談指南模板與紀錄 |
@@ -32,33 +48,43 @@
 | `docs/framework.md` | **產品力養成框架的完整設計**（架構、SSOT、rubrics、spine、視覺化、Phase 2/3）。活文件 |
 | `docs/job-search-2027.md` | **錨定 2027 年終的求職時程**（六個雙週窗口、容量算式、投遞規模）。活文件 |
 
-驗證方式：`open index.html` **與** `open roadmap.html`。沒有測試，改完兩頁都要開、逐分頁看過並確認 console 無錯誤。技能圖譜的**三個 sub-view（清單／雷達／技能樹）都要點過**，不要只看清單。
+驗證方式：`node scripts/validate-data.mjs`（十條跨層檢查），再 `open index.html` **與** `open roadmap.html`。沒有測試，改完兩頁都要開、逐分頁看過並確認 console 無錯誤。技能圖譜的**三個 sub-view（清單／雷達／技能樹）都要點過**，不要只看清單。
 
-⚠️ **`data/*.js` 一律用傳統 `<script src>`，永遠不要改成 `type="module"`。** ES module 在 `file://` 下被 CORS 擋掉，直接開檔就會整頁空白。載入順序也有意義：`data/pipeline.js` 的 `runwayState()` 讀 `data/budget.js` 的 `BUDGET`，budget 必須在前面。
+⚠️ **三層的 `.js` 一律用傳統 `<script src>`，永遠不要改成 `type="module"`。** ES module 在 `file://` 下被 CORS 擋掉，直接開檔就會整頁空白。
 
-CI 存在**不代表網站有 build step**——兩個頁面都仍然是打開就能跑。workflow 只改 `data/jobs.js` 的資料欄位，不產生網站。
+⚠️ **載入順序有意義**，兩頁都要照這個序：`profile/budget.js` → `job-search/pipeline.js`（`runwayState()` 讀 `BUDGET`）→ `framework/competencies.js` → `profile/assessment.js`（衍生視圖要吃它）→ `profile/history.js`。
 
-## 資料常數（都在 `data/*.js`，2026-08-19 從 `index.html` 搬出來）
+⚠️ **`roadmap.html` 開頭有個缺檔守衛**（`guardMissingData()`）：少了任何一個資料檔就在畫面上指名道姓，而不是整頁空白。**它必須用 `typeof X` 逐項寫死，不能跑迴圈查 `window[name]`**——`const` 宣告的頂層變數是語彙綁定，不會變成 `window` 的屬性，寫成迴圈會讓正常頁面也被判定缺檔。第一版就是這樣壞掉的。
 
-| 常數 | 檔案 | 用途 | status 值 |
-|---|---|---|---|
-| `PIPELINE_DATA` | `data/pipeline.js`（兩頁都載） | 主指標：投遞→面試→offer。**唯一的結果指標** | — |
-| `ROADMAP_DATA` | `data/roadmap.js` | 12 個 phase 的能力地圖，92 項 | `have` / `learning` / `need` / `wont` |
-| `SKILLS_DATA` | `data/skills.js` | 扁平技能表，39 項 | `have` / `partial` / `need` / `wont` |
-| `JOBS_DATA` | `data/jobs.js` | 12 個職缺（原 23，已退場 11），每筆帶 `health` | `open` / `closed` / `unknown` |
-| `JOBS_META` | `data/jobs.js` | `checkedAt` — 職缺清單最後核對日；`checkMethod` — 怎麼核的 | — |
-| `SKILL_HISTORY` | `data/skills.js` | 版本快照，每筆帶完整 `SKILLS_DATA` 副本 | — |
-| `BUDGET` | `data/budget.js`（兩頁都載） | 準備期 6 點預算，一點 = 一份過 rubric 的產出物 | — |
-| `APPLY_DATE` / `runwayState()` | `data/pipeline.js` | 投遞日與窗口狀態機。**到期邏輯只有這一份**，兩頁共用 | — |
+CI 存在**不代表網站有 build step**——兩個頁面都仍然是打開就能跑。workflow 只改 `job-search/jobs.js` 的資料欄位，不產生網站。
 
-## ⚠️ 兩份技能資料，餵不同的畫面
+## 資料常數
 
-這是這個 repo 最容易踩的地方：
+| 常數 | 檔案 | 用途 |
+|---|---|---|
+| `COMPETENCIES` | `framework/competencies.js` | 16 個 L1（Ravi Mehta 12 + ISPMA 4） |
+| `ITEMS` | `framework/competencies.js` | 121 個項目。`kind` = `skill` / `topic` / `ability` / `tool`；`l1` 掛哪個能力；`eval` 要拿什麼當佐證；`packaged: false` = 不隨框架出去 |
+| `CURRICULUM` | `framework/competencies.js` | 12 個 phase 的學習路徑結構。**只存哪個 phase 教哪些 item，不存狀態** |
+| `skillsView()` / `roadmapView()` | `framework/competencies.js` | 衍生視圖，render 時算不存。吃 `ASSESSMENT` |
+| `ASSESSMENT` | `profile/assessment.js` | **狀態的唯一來源**，key 是 item id。`have`/`partial`/`learning`/`need`/`wont` |
+| `SKILL_HISTORY` | `profile/history.js` | 版本快照。每筆 `data` 是合併前的扁平格式，**刻意不遷移** |
+| `BUDGET` | `profile/budget.js`（兩頁都載） | 6 點預算，一點 = 一份過 rubric 的產出物 |
+| `PIPELINE_DATA` | `job-search/pipeline.js`（兩頁都載） | **唯一的結果指標** |
+| `APPLY_DATE` / `runwayState()` | `job-search/pipeline.js` | 投遞日與窗口狀態機。**到期邏輯只有這一份**，兩頁共用 |
+| `JOBS_DATA` / `JOBS_META` | `job-search/jobs.js` | 12 個職缺（原 23，已退場 11）+ `checkedAt` |
 
-- **`ROADMAP_DATA`** → 只餵 `roadmap.html` Roadmap tab 的 `renderRoadmap()`
-- **`SKILLS_DATA`** → 餵 `roadmap.html` 技能圖譜 tab 的**三個** sub-view：`renderSkills()`（清單）、`buildCatGroups()`（雷達）、`renderSkillTree()`（技能樹），全部經 `getActiveSkillsData()`
+## ✅ 「兩份技能資料」那個坑已經補掉了（2026-08-19）
 
-兩者**不會互相同步**，且本來就有大量重複項目（GA4、SQL、JTBD、MVP、A/B Testing、Five Forces、Service Design 都同時存在於兩邊）。改一邊記得看另一邊。
+以前 `ROADMAP_DATA`（92）與 `SKILLS_DATA`（39）**各自帶一份 status、不互相同步**，7 個概念同時存在於兩邊（GA4、SQL、JTBD、MVP、A/B Testing、Five Forces、Service Design），改一邊不會動另一邊，而且沒有任何東西會提醒你。這是本檔以前標記的「最容易踩的地方」。
+
+現在**狀態只有 `profile/assessment.js` 一份**，兩個畫面都是它的衍生視圖：
+
+- `roadmapView(ASSESSMENT)` → Roadmap tab 的 `renderRoadmap()`
+- `skillsView(ASSESSMENT)` → 技能圖譜 tab 的**三個** sub-view，全部經 `getActiveSkillsData()`
+
+改一個 id 的 status，兩邊一起變。遷移時已驗證兩個視圖的輸出與合併前**逐字相同**。
+
+⚠️ 兩邊的**顯示名稱與字彙刻意不同**，那是顯示層而非狀態：課程用 roadmap.sh 原文（`Five Forces Analysis`、半形括號的 `Jobs to Be Done (JTBD)`），技能表用使用者自己的用詞；canonical status 存 `partial`，`roadmapView()` 翻成 `learning`。**不要為了「統一」把這些抹平**，那會改變站上的文字。
 
 改任何技能狀態後，三個 sub-view 都要驗證，不要只看清單。
 
@@ -67,7 +93,9 @@ CI 存在**不代表網站有 build step**——兩個頁面都仍然是打開�
 - **資料與呈現分離**：新欄位加在 `*_DATA` 常數，不要硬編碼進 HTML。（既有例外：jobs tab 的 readiness panel 是硬編碼的。）
 - **`wont`（刻意不學）不刪除**。保留項目、標狀態、填 `reason`，由 `renderWontList()` 集中展示——這個 scope cut 清單本身就是給面試官看的東西。`reasonDetail` 為選填長版。
 - **`wont` 一律排除在所有分數之外**：`calcCompletion()`、`buildCatGroups()`、`renderSkillTree()` 的分母都已過濾。新增計算時記得比照。
-- **`Five Forces` 在兩份資料裡叫不同名字**（`Five Forces Analysis` / `Porter's Five Forces`），靠 `WONT_ALIASES` 在不學清單中合併成一筆。
+- **`Five Forces` 在兩個視圖裡叫不同名字**（課程用 `Five Forces Analysis`、技能表用 `Porter's Five Forces`），靠 `WONT_ALIASES` 在不學清單中合併成一筆。狀態本身早就只有一份了。
+- **`framework/` 裡不放任何人的自評。** 新增欄位前先問「這是框架的意見，還是我的狀態」——前者進 `framework/competencies.js`，後者進 `profile/assessment.js`。
+- ⚠️ **`framework/` 目前還不能發佈**：76 項 skill 裡有 51 項的 `eval` 是 `null`，而 `eval`（要拿什麼當佐證）就是這個框架的價值。空白的 `eval` 等於送一張空表格。`validate-data.mjs` 會提醒但不擋。
 - **不要編造資料**。技能狀態、不學的理由、職缺資訊都是使用者的個人判斷，無法確認時填 `{{TBD}}`。`JOBS_META.checkedAt` 必須是真的核對過的日期。
 - **淨方向是減少**。這個站的失敗模式是堆一份永遠學不完的清單來說服自己還不能投遞。新增項目前先想能砍什麼。
 
@@ -91,5 +119,5 @@ CI 存在**不代表網站有 build step**——兩個頁面都仍然是打開�
 - **`JOBS_META.checkedAt` 只能由真的核對過的流程更新**（腳本會自己更新，手動改請先實跑）。
 - **`renderApplyGap()` 是刻意的刺**：主推開放數 vs `PIPELINE_DATA.applied`。維護清單很像在前進，但它不會讓投遞數字動。不要為了讓那行紅字消失而去改資料。
 - ⚠️ **GitHub 會在 repo 連續 60 天無活動後停掉排程 workflow**，要用 email 重新啟用。
-- ⚠️ **改 `data/jobs.js` 前先 `git pull --rebase`。** CI 每週一自動 commit 這個檔案，所以本機放個幾天就會**靜默地**落後。不先 pull 就會用舊的 `health` / `checkedAt` 蓋掉新的，等於手動製造假的 `checkedAt`。（2026-08-12 實際踩到：本機落後兩個 commit，`JOBS_META.checkedAt` 差了兩週，`JOBS_DATA` 少了 10 筆退場紀錄。）
-- ✅ **2026-08-19 起，`data/jobs.js` 是唯一的併發寫入點。** 資料搬出 `index.html` 之後，CI 只寫這一個檔，`index.html` / `roadmap.html` / `assets/` / 其餘 `data/*.js` 全是純人工檔。上面那條護欄的範圍因此從「整站」縮到一個檔——這就是搬檔真正買到的東西。
+- ⚠️ **改 `job-search/jobs.js` 前先 `git pull --rebase`。** CI 每週一自動 commit 這個檔案，所以本機放個幾天就會**靜默地**落後。不先 pull 就會用舊的 `health` / `checkedAt` 蓋掉新的，等於手動製造假的 `checkedAt`。（2026-08-12 實際踩到：本機落後兩個 commit，`JOBS_META.checkedAt` 差了兩週，`JOBS_DATA` 少了 10 筆退場紀錄。）
+- ✅ **`job-search/jobs.js` 是唯一的併發寫入點。** CI 只寫這一個檔；`index.html` / `roadmap.html` / `assets/` / `framework/` / `profile/` 全是純人工檔。這條護欄的範圍因此從「整站」縮到一個資料檔。
