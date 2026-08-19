@@ -39,6 +39,11 @@
 | `scripts/init.mjs` | 初始化（複製範本） |
 | `scripts/validate-data.mjs` | 十條跨層完整性檢查 |
 | `scripts/{migrate-spine,build-layers}.mjs` | 一次性遷移，留著讓分類決策可被審核與重跑 |
+| `scripts/discover-jobs.mjs` | 職缺**探索**（發現）。**只寫 `job-search/inbox.md`，永遠不寫 `jobs.js`** |
+| `job-search/sources.js` | 要盯哪些公司（判斷）+ 粗篩關鍵字 + `SEEN`（看過但不列，要寫 reason） |
+| `job-search/inbox.md` | 探索到的候選，等人工 triage。**還不是 pool** |
+| `README.md` | 對外／對接手者的說明：三層架構、機械 vs 判斷、三個 agent |
+| `.claude/agents/*.md` | 三個分層 agent，各自只准寫一層 |
 | `portfolio/linkju.html`、`portfolio/voipark.html` | 兩份 PM case study |
 | `scripts/check-jobs.mjs` | 職缺連結核對器（無相依套件，Node 18+）。**寫入 `job-search/jobs.js`** |
 | `.github/workflows/check-jobs.yml` | 每週一跑上面那支，有變更就自動 commit |
@@ -99,18 +104,37 @@ CI 存在**不代表網站有 build step**——兩個頁面都仍然是打開�
 - **不要編造資料**。技能狀態、不學的理由、職缺資訊都是使用者的個人判斷，無法確認時填 `{{TBD}}`。`JOBS_META.checkedAt` 必須是真的核對過的日期。
 - **淨方向是減少**。這個站的失敗模式是堆一份永遠學不完的清單來說服自己還不能投遞。新增項目前先想能砍什麼。
 
+## 三個 agent（`.claude/agents/`）
+
+| Agent | 管什麼 | **只能寫** |
+|---|---|---|
+| `framework-builder` | spine、`eval`、rubrics、範本、validator | `framework/` `.claude/skills/` `scripts/` |
+| `profile-keeper` | 自評重估、`wont` 理由、evidence、點數預算 | `profile/` |
+| `job-hunter` | 職缺探索、triage、Pipeline、清單衰減 | `job-search/` |
+
+邊界寫死在各自的 system prompt。要跨層就停下來說明——跨層通常代表「這件事屬於誰」還沒想清楚。
+
 ## 職缺清單的更新機制
 
 2026-07-27 實抓證實：清單建立四週後，**23 個裡有 10 個已下架（43%）**。所以核對必須自動化。
 
 **「自動核對」不等於「自動抓職缺」。** handoff §5 禁止的是後者，這條線不要越過：
 
-| | 誰做 | 為什麼 |
-|---|---|---|
-| **衰減**（連結死掉） | `scripts/check-jobs.mjs`，每週一自動 | 純機械，HTTP 狀態碼就是答案，零判斷 |
-| **發現**（新職缺） | 人工，見 `docs/job-triage.md` | `match` / `why` / `tier` / `pdmExposure` 全是使用者的個人判斷，自動生成就是編造資料 |
+| | 誰做 | 寫哪裡 | 為什麼 |
+|---|---|---|---|
+| **衰減**（連結死掉） | `check-jobs.mjs`，每週一 CI | `job-search/jobs.js` | 純機械，HTTP 狀態碼就是答案 |
+| **發現**（URL 存在、標題是什麼） | `discover-jobs.mjs` | `job-search/inbox.md` | 也是可查證的事實 |
+| **評價**（`match`/`why`/`tier`/`pdmExposure`） | **只有使用者** | `jobs.js`（由 `job-hunter` 代筆） | 自動生成就是編造資料 |
 
-腳本**只查 HTTP 狀態碼，不解析職缺頁內容**。
+`check-jobs.mjs` **只查 HTTP 狀態碼，不解析職缺頁內容**。
+`discover-jobs.mjs` **永遠不寫 `jobs.js`**——從 inbox 升級進 pool 一定要人回答那四個問題。
+
+**探索來源（2026-08-19 實測）**：`cake.me` 公司職缺頁是 SSR、robots.txt 全開，可用——
+現在 12 個目標有 11 個在上面。⚠️ **一頁只有 10 筆，必須跟著 `?page=` 翻完**：第一版沒翻頁，
+Shopline 23 個缺只看到 10 個而且畫面上看不出少了東西。
+不做的來源與理由記在 `job-search/sources.js` 檔頭（104 = Cloudflare challenge、
+Ashby = robots 明寫 `Disallow: /api/`、Yourator = 職缺靠 XHR、LinkedIn/Indeed = ToS）。
+**加新來源前先實抓一次該站的 `robots.txt`。**
 
 - **`health` 判定**：200 → `open`；404 / 410 → `closed`；**其他一律不是 `closed`**。403 / 429 / 5xx / timeout 代表「我們被擋了」而不是「職缺沒了」，一律保留原值。
 - **104.com.tw 永遠無法自動核對**。整站在 Cloudflare managed challenge 後面，連 `robots.txt` 都要跑 JS 才拿得到。腳本直接跳過不發請求，強制 `unknown`，交給人工點開。（cake.me 的 `robots.txt` 則完全開放，自報身分的 UA 就能通，不需要偽裝瀏覽器。）
