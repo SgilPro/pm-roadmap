@@ -11,16 +11,16 @@
 // A blocked request (403 etc.) is NOT evidence a job is closed — see the script.
 // closedAt on a job is the removal timer: it is retired on the next run 7+ days later.
 const JOBS_META = {
-  checkedAt: "2026-09-07",
+  checkedAt: "2026-09-14",
   checkMethod: "HEAD 每個職缺頁，依 HTTP 狀態碼判定",
   trackingSince: "2026-06-30",  // 統計窗口起點：職缺清單建立日
-  retiredTotal: 12                // 累計因下架而從清單移除的筆數
+  retiredTotal: 13                // 累計因下架而從清單移除的筆數
 };
 
 const JOBS_DATA = [
   // tier: "top" = 主推投遞 | "track" = 持續觀察 | "later" = 暫緩
   {
-    rank: 1, tier: "top", health: "open",
+    rank: 1, tier: "top", health: "closed", closedAt: "2026-09-14",
     title: "AI Project Manager (PM)",
     company: "MaiAgent 思邁智能",
     pdmExposure: "high",
@@ -119,19 +119,7 @@ const JOBS_DATA = [
     url: "https://www.cake.me/companies/104-company-1a2x6blq4a/jobs/business-analyst1"
   },
   {
-    rank: 9, tier: "later", health: "closed", closedAt: "2026-09-07",
-    title: "Brand Product Manager（GTM）",
-    company: "WitsPer 智選家",
-    type: "PDM + 行銷",
-    salary: "面議",
-    exp: "面議",
-    match: 55,
-    tags: ["品牌PM", "GTM重", "行銷偏向"],
-    why: "GTM / 行銷策略比重高，技術 PM 強項用不上。等行銷技能補強後再考慮。",
-    url: "https://www.cake.me/companies/witsper/jobs/bm-brand-product-manager-gtm-strategy"
-  },
-  {
-    rank: 10, tier: "later", health: "open",
+    rank: 9, tier: "later", health: "open",
     title: "Project Manager（健康領域）",
     company: "原氣",
     type: "PJM",
@@ -143,7 +131,7 @@ const JOBS_DATA = [
     url: "https://www.cake.me/companies/drbreaths/jobs/project-manage"
   },
   {
-    rank: 11, tier: "later", health: "unknown",
+    rank: 10, tier: "later", health: "unknown",
     title: "PM（台中）",
     company: "庠菻",
     type: "PJM",
