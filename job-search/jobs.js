@@ -11,29 +11,16 @@
 // A blocked request (403 etc.) is NOT evidence a job is closed — see the script.
 // closedAt on a job is the removal timer: it is retired on the next run 7+ days later.
 const JOBS_META = {
-  checkedAt: "2026-09-14",
+  checkedAt: "2026-09-21",
   checkMethod: "HEAD 每個職缺頁，依 HTTP 狀態碼判定",
   trackingSince: "2026-06-30",  // 統計窗口起點：職缺清單建立日
-  retiredTotal: 13                // 累計因下架而從清單移除的筆數
+  retiredTotal: 14                // 累計因下架而從清單移除的筆數
 };
 
 const JOBS_DATA = [
   // tier: "top" = 主推投遞 | "track" = 持續觀察 | "later" = 暫緩
   {
-    rank: 1, tier: "top", health: "closed", closedAt: "2026-09-14",
-    title: "AI Project Manager (PM)",
-    company: "MaiAgent 思邁智能",
-    pdmExposure: "high",
-    type: "PJM + PDM",
-    salary: "75–100 萬/年",
-    exp: "3 年以上",
-    match: 88,
-    tags: ["Scrum 必要", "AI/技術背景", "新創", "SaaS"],
-    why: "Scrum 必要條件（你有）、工程背景加分（你有）。薪資最高，背景命中率最高。",
-    url: "https://www.cake.me/companies/MaiAgent/jobs/ai-project-manager-pm"
-  },
-  {
-    rank: 2, tier: "top", health: "open",
+    rank: 1, tier: "top", health: "open",
     title: "Project Manager（Shopify 系統整合）",
     company: "Akohub",
     pdmExposure: "mid",
@@ -46,7 +33,7 @@ const JOBS_DATA = [
     url: "https://www.cake.me/companies/akohub/jobs/project-manager-shopify-store-system-integration"
   },
   {
-    rank: 3, tier: "top", health: "open",
+    rank: 2, tier: "top", health: "open",
     title: "產品經理 PM（Tasker 外包網）",
     company: "addcn",
     pdmExposure: "high",
@@ -59,7 +46,7 @@ const JOBS_DATA = [
     url: "https://www.cake.me/companies/addcn/jobs/tasker-outsourcing-network-product-manager-pm"
   },
   {
-    rank: 4, tier: "track", health: "open",
+    rank: 3, tier: "track", health: "open",
     title: "Associate Product Manager",
     company: "GoFreight",
     type: "APM",
@@ -71,7 +58,7 @@ const JOBS_DATA = [
     url: "https://www.cake.me/companies/GoFreight/jobs/associate-product-manager-ccf"
   },
   {
-    rank: 5, tier: "track", health: "open",
+    rank: 4, tier: "track", health: "open",
     title: "Product Manager（電商 SaaS）",
     company: "Shopline",
     type: "PDM",
@@ -83,7 +70,7 @@ const JOBS_DATA = [
     url: "https://www.cake.me/companies/shopline/jobs/tpd0303product-manager"
   },
   {
-    rank: 6, tier: "track", health: "open",
+    rank: 5, tier: "track", health: "open",
     title: "Amazon Project Manager（電商代操）",
     company: "HourLoop",
     type: "PJM",
@@ -95,7 +82,7 @@ const JOBS_DATA = [
     url: "https://www.cake.me/companies/hour-loop/jobs/amazon-amazon-project-manager"
   },
   {
-    rank: 7, tier: "later", health: "open",
+    rank: 6, tier: "later", health: "open",
     title: "Project Manager（政府標案）",
     company: "SYSTEX 精誠資訊",
     type: "PJM",
@@ -107,7 +94,7 @@ const JOBS_DATA = [
     url: "https://www.cake.me/companies/systex/jobs/pjm-project-manager-government-projects-v30h"
   },
   {
-    rank: 8, tier: "later", health: "open",
+    rank: 7, tier: "later", health: "open",
     title: "Business Analyst",
     company: "雲策數據",
     type: "BA",
@@ -119,7 +106,7 @@ const JOBS_DATA = [
     url: "https://www.cake.me/companies/104-company-1a2x6blq4a/jobs/business-analyst1"
   },
   {
-    rank: 9, tier: "later", health: "open",
+    rank: 8, tier: "later", health: "closed", closedAt: "2026-09-21",
     title: "Project Manager（健康領域）",
     company: "原氣",
     type: "PJM",
@@ -131,7 +118,7 @@ const JOBS_DATA = [
     url: "https://www.cake.me/companies/drbreaths/jobs/project-manage"
   },
   {
-    rank: 10, tier: "later", health: "unknown",
+    rank: 9, tier: "later", health: "unknown",
     title: "PM（台中）",
     company: "庠菻",
     type: "PJM",
