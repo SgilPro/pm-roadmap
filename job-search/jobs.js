@@ -11,10 +11,10 @@
 // A blocked request (403 etc.) is NOT evidence a job is closed — see the script.
 // closedAt on a job is the removal timer: it is retired on the next run 7+ days later.
 const JOBS_META = {
-  checkedAt: "2026-09-21",
+  checkedAt: "2026-09-28",
   checkMethod: "HEAD 每個職缺頁，依 HTTP 狀態碼判定",
   trackingSince: "2026-06-30",  // 統計窗口起點：職缺清單建立日
-  retiredTotal: 14                // 累計因下架而從清單移除的筆數
+  retiredTotal: 15                // 累計因下架而從清單移除的筆數
 };
 
 const JOBS_DATA = [
@@ -106,19 +106,7 @@ const JOBS_DATA = [
     url: "https://www.cake.me/companies/104-company-1a2x6blq4a/jobs/business-analyst1"
   },
   {
-    rank: 8, tier: "later", health: "closed", closedAt: "2026-09-21",
-    title: "Project Manager（健康領域）",
-    company: "原氣",
-    type: "PJM",
-    salary: "面議",
-    exp: "面議",
-    match: 60,
-    tags: ["健康科技", "小公司", "領域待確認"],
-    why: "健康領域待確認，需看更多 JD 細節後評估。",
-    url: "https://www.cake.me/companies/drbreaths/jobs/project-manage"
-  },
-  {
-    rank: 9, tier: "later", health: "unknown",
+    rank: 8, tier: "later", health: "unknown",
     title: "PM（台中）",
     company: "庠菻",
     type: "PJM",
